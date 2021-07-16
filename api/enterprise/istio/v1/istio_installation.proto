@@ -14,34 +14,6 @@ message IstioInstallationSpec {
 }
 
 message IstioInstallationStatus {
-    message IstioOperatorStatus {
-        // The state of a IstioOperator installation
-        enum State {
-            // Waiting for resources to be reconciled
-            PENDING = 0;
-
-            // In the process of reconciling Istio resources on to the managed cluster
-            RECONCILING = 1;
-
-            // All Istio components were installed successfully and they are healthy
-            HEALTHY = 2;
-
-            // This Istio installation is in an error state.
-            ERROR = 3;
-        }
-
-        // The most recent generation observed in the the IstioOperator metadata.
-        // If the `observedGeneration` does not match `metadata.generation`,
-        // Gloo Mesh has not processed the most recent version of this resource.
-        int64 observed_generation = 1;
-
-        // The current state of the IstioOperator
-        State state = 2;
-
-        // A human readable message about the current state of the IstioOperator
-        string message = 3;
-    }
-
     // The most recent generation observed in the the IstioInstallation metadata.
     // If the `observedGeneration` does not match `metadata.generation`,
     // Gloo Mesh has not processed the most recent version of this resource.
@@ -49,4 +21,35 @@ message IstioInstallationStatus {
 
     // The status of the installation for each IstioOperator that should be applied.
     map<string, IstioOperatorStatus> statuses = 2;
+
+    message IstioOperatorStatus {
+        // The most recent generation observed in the the IstioOperator metadata.
+        // If the `observedGeneration` does not match `metadata.generation`,
+        // Gloo Mesh has not processed the most recent version of this resource.
+        int64 observed_generation = 1;
+
+        // The current state of the IstioOperator.
+        State state = 2;
+
+        // A human readable message about the current state of the IstioOperator.
+        string message = 3;
+
+        // The revision tag for the associated Istio components.
+        string revision = 4;
+
+        // The state of a IstioOperator installation
+        enum State {
+            // Waiting for resources to be reconciled
+            PENDING = 0;
+
+            // In the process of installing Istio resources on to the managed cluster
+            INSTALLING = 1;
+
+            // All Istio components were installed successfully and they are healthy
+            HEALTHY = 2;
+
+            // This Istio installation is in an error state.
+            ERROR = 3;
+        }
+    }
 }

@@ -38,8 +38,8 @@ title: "istio_installation.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| clusterName | string |  | The cluster where the IstioOperators should be installed |
-  | istioOperatorRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | References for the IstioOperators that should be installed in the managed cluster |
+| clusterName | string |  | The cluster where the IstioOperators should be installed. |
+  | istioOperatorRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | References to the IstioOperator CRs whose installation parameters should be used when installing Istio to the managed cluster. |
   
 
 
@@ -71,8 +71,9 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IstioOperator metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | state | [istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.istio.v1.istio_installation#istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State" >}}) |  | The current state of the IstioOperator |
-  | message | string |  | A human readable message about the current state of the IstioOperator |
+  | state | [istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.istio.v1.istio_installation#istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State" >}}) |  | The current state of the IstioOperator. |
+  | message | string |  | A human readable message about the current state of the IstioOperator. |
+  | revision | string |  | The revision tag for the associated Istio components. |
   
 
 
@@ -105,9 +106,9 @@ The state of a IstioOperator installation
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | PENDING | 0 | Waiting for resources to be reconciled |
-| RECONCILING | 1 | In the process of reconciling Istio resources on to the managed cluster |
+| INSTALLING | 1 | In the process of installing Istio resources on to the managed cluster |
 | HEALTHY | 2 | All Istio components were installed successfully and they are healthy |
-| ERROR | 3 | One or more installed Istio component(s) in an error state |
+| ERROR | 3 | This Istio installation is in an error state. |
 
 
  <!-- end enums -->

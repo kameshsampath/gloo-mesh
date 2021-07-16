@@ -24,11 +24,11 @@ spec:
         spec:
           properties:
             clusterName:
-              description: The cluster where the IstioOperators should be installed
+              description: The cluster where the IstioOperators should be installed.
               type: string
             istioOperatorRefs:
-              description: References for the IstioOperators that should be installed
-                in the managed cluster
+              description: References to the IstioOperator CRs whose installation
+                parameters should be used when installing Istio to the managed cluster.
               items:
                 properties:
                   name:
@@ -54,7 +54,7 @@ spec:
                 properties:
                   message:
                     description: A human readable message about the current state
-                      of the IstioOperator
+                      of the IstioOperator.
                     type: string
                   observedGeneration:
                     description: |-
@@ -63,11 +63,14 @@ spec:
                       Gloo Mesh has not processed the most recent version of this resource.
                     format: int64
                     type: integer
+                  revision:
+                    description: The revision tag for the associated Istio components.
+                    type: string
                   state:
-                    description: The current state of the IstioOperator
+                    description: The current state of the IstioOperator.
                     enum:
                     - PENDING
-                    - RECONCILING
+                    - INSTALLING
                     - HEALTHY
                     - ERROR
                     type: string
