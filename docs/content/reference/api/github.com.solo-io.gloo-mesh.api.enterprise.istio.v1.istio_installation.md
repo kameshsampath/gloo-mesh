@@ -101,13 +101,13 @@ title: "istio_installation.proto"
 <a name="istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State"></a>
 
 ### IstioInstallationStatus.IstioOperatorStatus.State
-The state of a IstioOperator installation
+The state of a IstioOperator installation.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
-| PENDING | 0 | Waiting for resources to be reconciled |
-| INSTALLING | 1 | In the process of installing Istio resources on to the managed cluster |
-| HEALTHY | 2 | All Istio components were installed successfully and they are healthy |
+| PENDING | 0 | Waiting for resources to be reconciled. |
+| INSTALLING | 1 | In the process of installing Istio resources on to the managed cluster. |
+| HEALTHY | 2 | All Istio components were installed successfully and they are healthy. |
 | ERROR | 3 | This Istio installation is in an error state. |
 
 

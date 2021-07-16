@@ -37,15 +37,15 @@ message IstioInstallationStatus {
         // The revision tag for the associated Istio components.
         string revision = 4;
 
-        // The state of a IstioOperator installation
+        // The state of a IstioOperator installation.
         enum State {
-            // Waiting for resources to be reconciled
+            // Waiting for resources to be reconciled.
             PENDING = 0;
 
-            // In the process of installing Istio resources on to the managed cluster
+            // In the process of installing Istio resources on to the managed cluster.
             INSTALLING = 1;
 
-            // All Istio components were installed successfully and they are healthy
+            // All Istio components were installed successfully and they are healthy.
             HEALTHY = 2;
 
             // This Istio installation is in an error state.

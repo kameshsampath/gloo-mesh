@@ -27,15 +27,15 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// The state of a IstioOperator installation
+// The state of a IstioOperator installation.
 type IstioInstallationStatus_IstioOperatorStatus_State int32
 
 const (
-	// Waiting for resources to be reconciled
+	// Waiting for resources to be reconciled.
 	IstioInstallationStatus_IstioOperatorStatus_PENDING IstioInstallationStatus_IstioOperatorStatus_State = 0
-	// In the process of installing Istio resources on to the managed cluster
+	// In the process of installing Istio resources on to the managed cluster.
 	IstioInstallationStatus_IstioOperatorStatus_INSTALLING IstioInstallationStatus_IstioOperatorStatus_State = 1
-	// All Istio components were installed successfully and they are healthy
+	// All Istio components were installed successfully and they are healthy.
 	IstioInstallationStatus_IstioOperatorStatus_HEALTHY IstioInstallationStatus_IstioOperatorStatus_State = 2
 	// This Istio installation is in an error state.
 	IstioInstallationStatus_IstioOperatorStatus_ERROR IstioInstallationStatus_IstioOperatorStatus_State = 3
