@@ -55,7 +55,7 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IstioInstallation metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | statuses | [][istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.StatusesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.istio.v1.istio_installation#istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.StatusesEntry" >}}) | repeated | The status of the installation for each IstioOperator that should be applied. |
+  | statuses | [][istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.StatusesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.istio.v1.istio_installation#istio.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.StatusesEntry" >}}) | repeated | The status of the installation for each IstioOperator that should be applied, where the key is the IstioOperator `metadata.name` and the value is the operator's status. |
   
 
 

@@ -19,7 +19,8 @@ message IstioInstallationStatus {
     // Gloo Mesh has not processed the most recent version of this resource.
     int64 observed_generation = 1;
 
-    // The status of the installation for each IstioOperator that should be applied.
+    // The status of the installation for each IstioOperator that should be applied, where the
+    // key is the IstioOperator `metadata.name` and the value is the operator's status.
     map<string, IstioOperatorStatus> statuses = 2;
 
     message IstioOperatorStatus {

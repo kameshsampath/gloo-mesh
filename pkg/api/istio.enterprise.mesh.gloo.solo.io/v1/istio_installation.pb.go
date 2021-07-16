@@ -150,7 +150,8 @@ type IstioInstallationStatus struct {
 	// If the `observedGeneration` does not match `metadata.generation`,
 	// Gloo Mesh has not processed the most recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// The status of the installation for each IstioOperator that should be applied.
+	// The status of the installation for each IstioOperator that should be applied, where the
+	// key is the IstioOperator `metadata.name` and the value is the operator's status.
 	Statuses map[string]*IstioInstallationStatus_IstioOperatorStatus `protobuf:"bytes,2,rep,name=statuses,proto3" json:"statuses,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 

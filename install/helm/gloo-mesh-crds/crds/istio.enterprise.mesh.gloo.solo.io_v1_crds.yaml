@@ -75,8 +75,9 @@ spec:
                     - ERROR
                     type: string
                 type: object
-              description: The status of the installation for each IstioOperator that
-                should be applied.
+              description: |-
+                The status of the installation for each IstioOperator that should be applied, where the
+                key is the IstioOperator `metadata.name` and the value is the operator's status.
               type: object
           type: object
       type: object
