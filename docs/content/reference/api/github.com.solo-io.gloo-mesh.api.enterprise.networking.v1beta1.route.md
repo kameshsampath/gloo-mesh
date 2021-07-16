@@ -41,6 +41,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 | ----- | ---- | ----- | ----------- |
 | refs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Delegate to the RouteTable resources with matching `name` and `namespace`. |
   | selector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Delegate to the RouteTables that match the given selector. |
+  | sortRoutes | bool |  | Sort all routes by specificity instead maintaining the order of routes in the table. Routes are sorted such that ones that are estimated to match fewer routes come before more general routes. Note that this setting will take precedence over any sorting/weights in child delegate actions. |
   
 
 

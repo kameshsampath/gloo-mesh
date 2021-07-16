@@ -296,6 +296,10 @@ func (m *DelegateAction) Equal(that interface{}) bool {
 		}
 	}
 
+	if m.GetSortRoutes() != target.GetSortRoutes() {
+		return false
+	}
+
 	return true
 }
 
