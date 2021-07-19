@@ -105,15 +105,12 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 
 	// By this point, VirtualMeshes have already undergone pre-translation validation.
 	for _, virtualMesh := range virtualMeshes {
-		virtualMesh.Status = networkingv1.VirtualMeshStatus{
-			State:              commonv1.ApprovalState_ACCEPTED,
-			ObservedGeneration: virtualMesh.Generation,
-			Meshes:             map[string]*networkingv1.ApprovalStatus{},
-			Destinations:       map[string]*networkingv1.ApprovalStatus{},
-			// Need to retain previous conditions
-			Conditions:          virtualMesh.Status.Conditions,
-			DeployedSharedTrust: virtualMesh.Status.DeployedSharedTrust,
-		}
+		// Only reset fields which need to be clean before translating.
+		// The rest are stateful, and need to remain consistent across reconciles
+		virtualMesh.Status.State = commonv1.ApprovalState_ACCEPTED
+		virtualMesh.Status.ObservedGeneration = virtualMesh.Generation
+		virtualMesh.Status.Meshes = map[string]*networkingv1.ApprovalStatus{}
+		virtualMesh.Status.Destinations = map[string]*networkingv1.ApprovalStatus{}
 	}
 }
 
