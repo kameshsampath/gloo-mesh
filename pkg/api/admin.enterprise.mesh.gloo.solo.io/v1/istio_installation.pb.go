@@ -203,7 +203,7 @@ type IstioInstallationStatus struct {
 	// If the `observedGeneration` does not match `metadata.generation`,
 	// Gloo Mesh has not processed the most recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// The overall status of the Istio installation across the associated clusters.
+	// The status of processing the Istio installation.
 	Status *IstioInstallationStatus_IstioInstallationStatus `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	// The status of each IstioOperator that should be installed by Gloo Mesh, where the
 	// key is the concatenation of the IstioOperator's name, namespace, and cluster and
@@ -271,7 +271,7 @@ type IstioInstallationStatus_IstioInstallationStatus struct {
 
 	// The current state of the IstioOperator.
 	State IstioInstallationStatus_IstioInstallationStatus_State `protobuf:"varint,1,opt,name=state,proto3,enum=admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus_IstioInstallationStatus_State" json:"state,omitempty"`
-	// A human readable message about the current state of the IstioOperator.
+	// A human readable message about the current state of the IstioInstallation.
 	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 }
 

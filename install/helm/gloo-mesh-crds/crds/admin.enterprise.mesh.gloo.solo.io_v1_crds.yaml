@@ -120,12 +120,11 @@ spec:
               format: int64
               type: integer
             status:
-              description: The overall status of the Istio installation across the
-                associated clusters.
+              description: The status of processing the Istio installation.
               properties:
                 message:
                   description: A human readable message about the current state of
-                    the IstioOperator.
+                    the IstioInstallation.
                   type: string
                 state:
                   description: The current state of the IstioOperator.

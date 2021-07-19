@@ -57,7 +57,7 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IstioInstallation metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | status | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus" >}}) |  | The overall status of the Istio installation across the associated clusters. |
+  | status | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus" >}}) |  | The status of processing the Istio installation. |
   | istioOperatorStatuses | [][admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry" >}}) | repeated | The status of each IstioOperator that should be installed by Gloo Mesh, where the key is the concatenation of the IstioOperator's name, namespace, and cluster and the value is the operator's status. |
   
 
@@ -74,7 +74,7 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | state | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioInstallationStatus.State" >}}) |  | The current state of the IstioOperator. |
-  | message | string |  | A human readable message about the current state of the IstioOperator. |
+  | message | string |  | A human readable message about the current state of the IstioInstallation. |
   
 
 
