@@ -112,6 +112,10 @@ spec:
                 key is the concatenation of the IstioOperator's name, namespace, and cluster and
                 the value is the operator's status.
               type: object
+            message:
+              description: A human readable message about the current state of the
+                IstioInstallation.
+              type: string
             observedGeneration:
               description: |-
                 The most recent generation observed in the the IstioInstallation metadata.
@@ -119,21 +123,13 @@ spec:
                 Gloo Mesh has not processed the most recent version of this resource.
               format: int64
               type: integer
-            status:
-              description: The status of processing the Istio installation.
-              properties:
-                message:
-                  description: A human readable message about the current state of
-                    the IstioInstallation.
-                  type: string
-                state:
-                  description: The current state of the IstioOperator.
-                  enum:
-                  - PENDING
-                  - ACCEPTED
-                  - FAILED
-                  type: string
-              type: object
+            state:
+              description: The current state of the IstioOperator.
+              enum:
+              - PENDING
+              - ACCEPTED
+              - FAILED
+              type: string
           type: object
       type: object
   versions:

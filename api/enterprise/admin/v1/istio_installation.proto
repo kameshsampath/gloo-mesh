@@ -19,32 +19,27 @@ message IstioInstallationStatus {
     // Gloo Mesh has not processed the most recent version of this resource.
     int64 observed_generation = 1;
 
-    // The status of processing the Istio installation.
-    IstioInstallationStatus status = 2;
+    // The current state of the IstioOperator.
+    State state = 2;
+
+    // A human readable message about the current state of the IstioInstallation.
+    string message = 3;
 
     // The status of each IstioOperator that should be installed by Gloo Mesh, where the
     // key is the concatenation of the IstioOperator's name, namespace, and cluster and
     // the value is the operator's status.
-    map<string, IstioOperatorStatus> istio_operator_statuses = 3;
+    map<string, IstioOperatorStatus> istio_operator_statuses = 4;
 
-    message IstioInstallationStatus {
-        // The current state of the IstioOperator.
-        State state = 1;
+    // The state of the IstioInstallation.
+    enum State {
+        // Waiting for the Istio installation to be processed.
+        PENDING = 0;
 
-        // A human readable message about the current state of the IstioInstallation.
-        string message = 2;
+        // Finished processing the Istio installation successfully.
+        ACCEPTED = 1;
 
-        // The state of the IstioInstallation.
-        enum State {
-            // Waiting for the Istio installation to be processed.
-            PENDING = 0;
-
-            // Finished processing the Istio installation successfully.
-            ACCEPTED = 1;
-
-            // Failed while processing the Istio installation parameters.
-            FAILED = 2;
-        }
+        // Failed while processing the Istio installation parameters.
+        FAILED = 2;
     }
 
     message IstioOperatorStatus {
