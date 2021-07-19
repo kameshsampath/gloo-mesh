@@ -260,12 +260,8 @@ spec:
                   anyOf:
                   - required:
                     - advanced
-                  - required:
-                    - basic
               - required:
                 - advanced
-              - required:
-                - basic
               properties:
                 advanced:
                   properties:
@@ -783,8 +779,6 @@ spec:
                             type: array
                         type: object
                       type: array
-                  type: object
-                basic:
                   type: object
               type: object
           type: object
@@ -1653,11 +1647,6 @@ spec:
                             properties:
                               denyOnFail:
                                 type: boolean
-                              rateLimitBeforeAuth:
-                                description: |-
-                                  Set this is set to true if you would like to rate limit traffic before applying external auth to it.
-                                  *Note*: When this is true, you will lose some features like being able to rate limit a request based on its auth state
-                                type: boolean
                               ratelimitServerRef:
                                 properties:
                                   name:
@@ -2504,12 +2493,8 @@ spec:
                                     anyOf:
                                     - required:
                                       - advanced
-                                    - required:
-                                      - basic
                                 - required:
                                   - advanced
-                                - required:
-                                  - basic
                             required:
                             - client
                           - required:
@@ -2521,12 +2506,8 @@ spec:
                                 anyOf:
                                 - required:
                                   - advanced
-                                - required:
-                                  - basic
                             - required:
                               - advanced
-                            - required:
-                              - basic
                         required:
                         - client
                       - required:
@@ -3064,8 +3045,6 @@ spec:
                                         type: array
                                     type: object
                                   type: array
-                              type: object
-                            basic:
                               type: object
                           type: object
                         ratelimitClientConfigRef:
@@ -3812,12 +3791,8 @@ spec:
                                       anyOf:
                                       - required:
                                         - advanced
-                                      - required:
-                                        - basic
                                   - required:
                                     - advanced
-                                  - required:
-                                    - basic
                               required:
                               - client
                             - required:
@@ -3829,12 +3804,8 @@ spec:
                                   anyOf:
                                   - required:
                                     - advanced
-                                  - required:
-                                    - basic
                               - required:
                                 - advanced
-                              - required:
-                                - basic
                           required:
                           - client
                         - required:
@@ -4378,8 +4349,6 @@ spec:
                                           type: array
                                       type: object
                                     type: array
-                                type: object
-                              basic:
                                 type: object
                             type: object
                           ratelimitClientConfigRef:
@@ -5392,12 +5361,8 @@ spec:
                                       anyOf:
                                       - required:
                                         - advanced
-                                      - required:
-                                        - basic
                                   - required:
                                     - advanced
-                                  - required:
-                                    - basic
                               required:
                               - client
                             - required:
@@ -5409,12 +5374,8 @@ spec:
                                   anyOf:
                                   - required:
                                     - advanced
-                                  - required:
-                                    - basic
                               - required:
                                 - advanced
-                              - required:
-                                - basic
                           required:
                           - client
                         - required:
@@ -5958,8 +5919,6 @@ spec:
                                           type: array
                                       type: object
                                     type: array
-                                type: object
-                              basic:
                                 type: object
                             type: object
                           ratelimitClientConfigRef:

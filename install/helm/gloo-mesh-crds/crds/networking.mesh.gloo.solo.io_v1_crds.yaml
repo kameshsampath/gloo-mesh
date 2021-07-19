@@ -502,12 +502,8 @@ spec:
                                 anyOf:
                                 - required:
                                   - advanced
-                                - required:
-                                  - basic
                             - required:
                               - advanced
-                            - required:
-                              - basic
                         required:
                         - client
                       - required:
@@ -519,12 +515,8 @@ spec:
                             anyOf:
                             - required:
                               - advanced
-                            - required:
-                              - basic
                         - required:
                           - advanced
-                        - required:
-                          - basic
                     required:
                     - client
                   - required:
@@ -1054,8 +1046,6 @@ spec:
                                     type: array
                                 type: object
                               type: array
-                          type: object
-                        basic:
                           type: object
                       type: object
                     ratelimitClientConfigRef:

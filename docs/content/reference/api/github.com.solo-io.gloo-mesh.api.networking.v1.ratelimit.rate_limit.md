@@ -21,7 +21,6 @@ title: "rate_limit.proto"
   - [GatewayRateLimit](#ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit)
   - [RateLimitClient](#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient)
   - [RateLimitClient.AdvancedRateLimit](#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit)
-  - [RateLimitClient.BasicRateLimit](#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit)
   - [RouteRateLimit](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit)
 
 
@@ -41,7 +40,6 @@ Configure the Rate-Limit Filter on a Gateway
 | ratelimitServerRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
   | requestTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  |  |
   | denyOnFail | bool |  |  |
-  | rateLimitBeforeAuth | bool |  | Set this is set to true if you would like to rate limit traffic before applying external auth to it. *Note*: When this is true, you will lose some features like being able to rate limit a request based on its auth state |
   
 
 
@@ -51,13 +49,12 @@ Configure the Rate-Limit Filter on a Gateway
 <a name="ratelimit.networking.mesh.gloo.solo.io.RateLimitClient"></a>
 
 ### RateLimitClient
-The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows different limits for both authorized and anonymous users (Basic) and the ratelimit Actions directly (Advanced). The corresponding server config should be set in the RateLimitConfig.
+The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows configuring the ratelimit Actions directly (Advanced). The corresponding server config should be set in the RateLimitConfig.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | advanced | [ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit" >}}) |  |  |
-  | basic | [ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit" >}}) |  |  |
   
 
 
@@ -74,16 +71,6 @@ Use this field if you want to inline the Envoy rate limits. Note that this does 
 | ----- | ---- | ----- | ----------- |
 | actions | [][ratelimit.api.solo.io.RateLimitActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.RateLimitActions" >}}) | repeated | Actions specify how the client (Envoy) will compose the descriptors that will be sent to the server to make a rate limiting decision. |
   
-
-
-
-
-
-<a name="ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit"></a>
-
-### RateLimitClient.BasicRateLimit
-Basic rate-limiting API
-
 
 
 

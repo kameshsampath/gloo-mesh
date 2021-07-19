@@ -22,23 +22,15 @@ message GatewayRateLimit {
     google.protobuf.Duration request_timeout = 2;
 
     bool deny_on_fail = 3;
-
-    // Set this is set to true if you would like to rate limit traffic before applying external auth to it.
-    // *Note*: When this is true, you will lose some features like being able to rate limit a request based on its auth state
-    bool rate_limit_before_auth = 9;
 }
 
-// The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows different limits for
-// both authorized and anonymous users (Basic) and the ratelimit Actions directly (Advanced).
+// The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows configuring
+// the ratelimit Actions directly (Advanced).
 // The corresponding server config should be set in the RateLimitConfig.
 message RateLimitClient {
     oneof config_type {
         AdvancedRateLimit advanced = 1;
-        BasicRateLimit basic = 2;
     }
-
-    // Basic rate-limiting API
-    message BasicRateLimit {}
 
     // Use this field if you want to inline the Envoy rate limits.
     // Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to

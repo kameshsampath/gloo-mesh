@@ -70,10 +70,6 @@ func (m *GatewayRateLimit) Equal(that interface{}) bool {
 		return false
 	}
 
-	if m.GetRateLimitBeforeAuth() != target.GetRateLimitBeforeAuth() {
-		return false
-	}
-
 	return true
 }
 
@@ -111,21 +107,6 @@ func (m *RateLimitClient) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(m.GetAdvanced(), target.GetAdvanced()) {
-				return false
-			}
-		}
-
-	case *RateLimitClient_Basic:
-		if _, ok := target.ConfigType.(*RateLimitClient_Basic); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetBasic()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetBasic()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetBasic(), target.GetBasic()) {
 				return false
 			}
 		}
@@ -208,30 +189,6 @@ func (m *RouteRateLimit) Equal(that interface{}) bool {
 		if m.RateLimitConfigType != target.RateLimitConfigType {
 			return false
 		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *RateLimitClient_BasicRateLimit) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*RateLimitClient_BasicRateLimit)
-	if !ok {
-		that2, ok := that.(RateLimitClient_BasicRateLimit)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
 	}
 
 	return true
