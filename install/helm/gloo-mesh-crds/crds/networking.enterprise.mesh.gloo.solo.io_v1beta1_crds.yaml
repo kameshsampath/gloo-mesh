@@ -2435,9 +2435,8 @@ spec:
                           type: integer
                       type: object
                     mtls:
-                      description: |-
-                        Configure mTLS settings. If specified will override global default defined in Settings.
-                        DEPRECATED: use DestinationPolicy to configure MTLS
+                      description: Configure mTLS settings. If specified will override
+                        global default defined in Settings.
                       properties:
                         istio:
                           description: Istio TLS settings.
@@ -2455,7 +2454,6 @@ spec:
                       description: |-
                         Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
                         Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-                        DEPRECATED: use DestinationPolicy to configure Outlier Detection
                       properties:
                         baseEjectionTime:
                           description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
@@ -3733,9 +3731,8 @@ spec:
                             type: integer
                         type: object
                       mtls:
-                        description: |-
-                          Configure mTLS settings. If specified will override global default defined in Settings.
-                          DEPRECATED: use DestinationPolicy to configure MTLS
+                        description: Configure mTLS settings. If specified will override
+                          global default defined in Settings.
                         properties:
                           istio:
                             description: Istio TLS settings.
@@ -3753,7 +3750,6 @@ spec:
                         description: |-
                           Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
                           Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-                          DEPRECATED: use DestinationPolicy to configure Outlier Detection
                         properties:
                           baseEjectionTime:
                             description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
@@ -5303,9 +5299,8 @@ spec:
                             type: integer
                         type: object
                       mtls:
-                        description: |-
-                          Configure mTLS settings. If specified will override global default defined in Settings.
-                          DEPRECATED: use DestinationPolicy to configure MTLS
+                        description: Configure mTLS settings. If specified will override
+                          global default defined in Settings.
                         properties:
                           istio:
                             description: Istio TLS settings.
@@ -5323,7 +5318,6 @@ spec:
                         description: |-
                           Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
                           Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-                          DEPRECATED: use DestinationPolicy to configure Outlier Detection
                         properties:
                           baseEjectionTime:
                             description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
