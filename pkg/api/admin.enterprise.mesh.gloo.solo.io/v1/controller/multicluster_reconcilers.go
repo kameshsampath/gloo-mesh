@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	istio_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/istio.enterprise.mesh.gloo.solo.io/v1"
+	admin_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -21,7 +21,7 @@ import (
 // Reconcile Upsert events for the IstioInstallation Resource across clusters.
 // implemented by the user
 type MulticlusterIstioInstallationReconciler interface {
-	ReconcileIstioInstallation(clusterName string, obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
+	ReconcileIstioInstallation(clusterName string, obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the IstioInstallation Resource across clusters.
@@ -33,11 +33,11 @@ type MulticlusterIstioInstallationDeletionReconciler interface {
 }
 
 type MulticlusterIstioInstallationReconcilerFuncs struct {
-	OnReconcileIstioInstallation         func(clusterName string, obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
+	OnReconcileIstioInstallation         func(clusterName string, obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
 	OnReconcileIstioInstallationDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterIstioInstallationReconcilerFuncs) ReconcileIstioInstallation(clusterName string, obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error) {
+func (f *MulticlusterIstioInstallationReconcilerFuncs) ReconcileIstioInstallation(clusterName string, obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error) {
 	if f.OnReconcileIstioInstallation == nil {
 		return reconcile.Result{}, nil
 	}
@@ -67,7 +67,7 @@ func (m *multiclusterIstioInstallationReconcileLoop) AddMulticlusterIstioInstall
 }
 
 func NewMulticlusterIstioInstallationReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterIstioInstallationReconcileLoop {
-	return &multiclusterIstioInstallationReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}, options)}
+	return &multiclusterIstioInstallationReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}, options)}
 }
 
 type genericIstioInstallationMulticlusterReconciler struct {
@@ -82,7 +82,7 @@ func (g genericIstioInstallationMulticlusterReconciler) ReconcileDeletion(cluste
 }
 
 func (g genericIstioInstallationMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}

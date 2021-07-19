@@ -15,7 +15,7 @@ import (
 
 // GroupVersionKind for IstioInstallation
 var IstioInstallationGVK = schema.GroupVersionKind{
-	Group:   "istio.enterprise.mesh.gloo.solo.io",
+	Group:   "admin.enterprise.mesh.gloo.solo.io",
 	Version: "v1",
 	Kind:    "IstioInstallation",
 }

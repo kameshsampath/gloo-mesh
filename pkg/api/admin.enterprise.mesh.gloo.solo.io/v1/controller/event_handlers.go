@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	istio_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/istio.enterprise.mesh.gloo.solo.io/v1"
+	admin_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
@@ -20,41 +20,41 @@ import (
 // Handle events for the IstioInstallation Resource
 // DEPRECATED: Prefer reconciler pattern.
 type IstioInstallationEventHandler interface {
-	CreateIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	UpdateIstioInstallation(old, new *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	DeleteIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	GenericIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	CreateIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	UpdateIstioInstallation(old, new *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	DeleteIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	GenericIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
 }
 
 type IstioInstallationEventHandlerFuncs struct {
-	OnCreate  func(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	OnUpdate  func(old, new *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	OnDelete  func(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
-	OnGeneric func(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	OnCreate  func(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	OnUpdate  func(old, new *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	OnDelete  func(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	OnGeneric func(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
 }
 
-func (f *IstioInstallationEventHandlerFuncs) CreateIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
+func (f *IstioInstallationEventHandlerFuncs) CreateIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *IstioInstallationEventHandlerFuncs) DeleteIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
+func (f *IstioInstallationEventHandlerFuncs) DeleteIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *IstioInstallationEventHandlerFuncs) UpdateIstioInstallation(objOld, objNew *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
+func (f *IstioInstallationEventHandlerFuncs) UpdateIstioInstallation(objOld, objNew *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *IstioInstallationEventHandlerFuncs) GenericIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
+func (f *IstioInstallationEventHandlerFuncs) GenericIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ type istioInstallationEventWatcher struct {
 
 func NewIstioInstallationEventWatcher(name string, mgr manager.Manager) IstioInstallationEventWatcher {
 	return &istioInstallationEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}),
+		watcher: events.NewWatcher(name, mgr, &admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}),
 	}
 }
 
@@ -89,7 +89,7 @@ type genericIstioInstallationHandler struct {
 }
 
 func (h genericIstioInstallationHandler) Create(object client.Object) error {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}
@@ -97,7 +97,7 @@ func (h genericIstioInstallationHandler) Create(object client.Object) error {
 }
 
 func (h genericIstioInstallationHandler) Delete(object client.Object) error {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}
@@ -105,11 +105,11 @@ func (h genericIstioInstallationHandler) Delete(object client.Object) error {
 }
 
 func (h genericIstioInstallationHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	objOld, ok := old.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", old)
 	}
-	objNew, ok := new.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	objNew, ok := new.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", new)
 	}
@@ -117,7 +117,7 @@ func (h genericIstioInstallationHandler) Update(old, new client.Object) error {
 }
 
 func (h genericIstioInstallationHandler) Generic(object client.Object) error {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}

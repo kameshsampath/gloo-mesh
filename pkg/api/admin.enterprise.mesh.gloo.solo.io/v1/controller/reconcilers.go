@@ -8,7 +8,7 @@ package controller
 import (
 	"context"
 
-	istio_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/istio.enterprise.mesh.gloo.solo.io/v1"
+	admin_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -20,7 +20,7 @@ import (
 // Reconcile Upsert events for the IstioInstallation Resource.
 // implemented by the user
 type IstioInstallationReconciler interface {
-	ReconcileIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
+	ReconcileIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the IstioInstallation Resource.
@@ -32,11 +32,11 @@ type IstioInstallationDeletionReconciler interface {
 }
 
 type IstioInstallationReconcilerFuncs struct {
-	OnReconcileIstioInstallation         func(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
+	OnReconcileIstioInstallation         func(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error)
 	OnReconcileIstioInstallationDeletion func(req reconcile.Request) error
 }
 
-func (f *IstioInstallationReconcilerFuncs) ReconcileIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error) {
+func (f *IstioInstallationReconcilerFuncs) ReconcileIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) (reconcile.Result, error) {
 	if f.OnReconcileIstioInstallation == nil {
 		return reconcile.Result{}, nil
 	}
@@ -61,7 +61,7 @@ type IstioInstallationFinalizer interface {
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeIstioInstallation(obj *istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
+	FinalizeIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) error
 }
 
 type IstioInstallationReconcileLoop interface {
@@ -75,7 +75,7 @@ type istioInstallationReconcileLoop struct {
 func NewIstioInstallationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) IstioInstallationReconcileLoop {
 	return &istioInstallationReconcileLoop{
 		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}, options),
+		loop: reconcile.NewLoop(name, "", mgr, &admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}, options),
 	}
 }
 
@@ -102,7 +102,7 @@ type genericIstioInstallationReconciler struct {
 }
 
 func (r genericIstioInstallationReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return reconcile.Result{}, errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}
@@ -127,7 +127,7 @@ func (r genericIstioInstallationFinalizer) FinalizerName() string {
 }
 
 func (r genericIstioInstallationFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*istio_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	obj, ok := object.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
 	if !ok {
 		return errors.Errorf("internal error: IstioInstallation handler received event for %T", object)
 	}
