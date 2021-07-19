@@ -186,7 +186,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if err != nil {
 			return err
 		} else if wait {
-			// If the requested translator signals us to wait, we need to hang on
+			// If the requested translator signals us to wait, we need to hang on.
+			// This can happen when the agent has updated the `CertificateRequest`,
+			// and it is waiting for issuer to fulfill that request.
 			return nil
 		}
 

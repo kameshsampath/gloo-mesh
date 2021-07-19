@@ -33,8 +33,8 @@ type Applier interface {
 	Apply(
 		ctx context.Context,
 		input input.LocalSnapshot,
-		userSupplied input.RemoteSnapshot,
-		generated input.RemoteSnapshot,
+		userSupplied input.RemoteSnapshot, // Remote resources which the user has created. (doesn't have our labels)
+		generated input.RemoteSnapshot, // Remote resources which we have created. (has our labels)
 	)
 }
 
@@ -105,12 +105,17 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 
 	// By this point, VirtualMeshes have already undergone pre-translation validation.
 	for _, virtualMesh := range virtualMeshes {
-		// Only reset fields which need to be clean before translating.
-		// The rest are stateful, and need to remain consistent across reconciles
-		virtualMesh.Status.State = commonv1.ApprovalState_ACCEPTED
-		virtualMesh.Status.ObservedGeneration = virtualMesh.Generation
-		virtualMesh.Status.Meshes = map[string]*networkingv1.ApprovalStatus{}
-		virtualMesh.Status.Destinations = map[string]*networkingv1.ApprovalStatus{}
+		// Only reset fields which need to be clean before translating. The rest are considered stateful
+		virtualMesh.Status = networkingv1.VirtualMeshStatus{
+			State:              commonv1.ApprovalState_ACCEPTED,
+			ObservedGeneration: virtualMesh.Generation,
+			Meshes:             map[string]*networkingv1.ApprovalStatus{},
+			Destinations:       map[string]*networkingv1.ApprovalStatus{},
+			Errors:             nil,
+			// Need to retain previous conditions
+			Conditions:          virtualMesh.Status.Conditions,
+			DeployedSharedTrust: virtualMesh.Status.DeployedSharedTrust,
+		}
 	}
 }
 
