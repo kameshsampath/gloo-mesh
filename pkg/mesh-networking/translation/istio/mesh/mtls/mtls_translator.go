@@ -442,6 +442,8 @@ func getPodsToBounce(
 				},
 				ConfigMapKey: secrets.RootCertID,
 			},
+			// The cert is not considered applied until all pods containing the new certificate have started properly.
+			WaitForReplicas: 1,
 		})
 	}
 
