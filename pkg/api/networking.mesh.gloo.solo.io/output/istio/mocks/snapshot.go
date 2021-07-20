@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
@@ -21,6 +22,7 @@ import (
 	resource "github.com/solo-io/skv2/pkg/resource"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1beta10 "istio.io/client-go/pkg/apis/security/v1beta1"
+	v1alpha1 "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -139,6 +141,20 @@ func (m *MockSnapshot) IssuedCertificates() []istio.LabeledIssuedCertificateSet 
 func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).IssuedCertificates))
+}
+
+// IstioOperators mocks base method.
+func (m *MockSnapshot) IstioOperators() []istio.LabeledIstioOperatorSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IstioOperators")
+	ret0, _ := ret[0].([]istio.LabeledIstioOperatorSet)
+	return ret0
+}
+
+// IstioOperators indicates an expected call of IstioOperators.
+func (mr *MockSnapshotMockRecorder) IstioOperators() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IstioOperators", reflect.TypeOf((*MockSnapshot)(nil).IstioOperators))
 }
 
 // MarshalJSON mocks base method.
@@ -876,6 +892,71 @@ func (mr *MockLabeledAuthorizationPolicySetMockRecorder) Set() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAuthorizationPolicySet)(nil).Set))
 }
 
+// MockLabeledIstioOperatorSet is a mock of LabeledIstioOperatorSet interface.
+type MockLabeledIstioOperatorSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockLabeledIstioOperatorSetMockRecorder
+}
+
+// MockLabeledIstioOperatorSetMockRecorder is the mock recorder for MockLabeledIstioOperatorSet.
+type MockLabeledIstioOperatorSetMockRecorder struct {
+	mock *MockLabeledIstioOperatorSet
+}
+
+// NewMockLabeledIstioOperatorSet creates a new mock instance.
+func NewMockLabeledIstioOperatorSet(ctrl *gomock.Controller) *MockLabeledIstioOperatorSet {
+	mock := &MockLabeledIstioOperatorSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledIstioOperatorSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLabeledIstioOperatorSet) EXPECT() *MockLabeledIstioOperatorSetMockRecorder {
+	return m.recorder
+}
+
+// Generic mocks base method.
+func (m *MockLabeledIstioOperatorSet) Generic() output.ResourceList {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(output.ResourceList)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockLabeledIstioOperatorSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledIstioOperatorSet)(nil).Generic))
+}
+
+// Labels mocks base method.
+func (m *MockLabeledIstioOperatorSet) Labels() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Labels")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Labels indicates an expected call of Labels.
+func (mr *MockLabeledIstioOperatorSetMockRecorder) Labels() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledIstioOperatorSet)(nil).Labels))
+}
+
+// Set mocks base method.
+func (m *MockLabeledIstioOperatorSet) Set() v1alpha1sets.IstioOperatorSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set")
+	ret0, _ := ret[0].(v1alpha1sets.IstioOperatorSet)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockLabeledIstioOperatorSetMockRecorder) Set() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledIstioOperatorSet)(nil).Set))
+}
+
 // MockBuilder is a mock of Builder interface.
 type MockBuilder struct {
 	ctrl     *gomock.Controller
@@ -989,6 +1070,22 @@ func (m *MockBuilder) AddIssuedCertificates(issuedCertificates ...*v1.IssuedCert
 func (mr *MockBuilderMockRecorder) AddIssuedCertificates(issuedCertificates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIssuedCertificates", reflect.TypeOf((*MockBuilder)(nil).AddIssuedCertificates), issuedCertificates...)
+}
+
+// AddIstioOperators mocks base method.
+func (m *MockBuilder) AddIstioOperators(istioOperators ...*v1alpha1.IstioOperator) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range istioOperators {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddIstioOperators", varargs...)
+}
+
+// AddIstioOperators indicates an expected call of AddIstioOperators.
+func (mr *MockBuilderMockRecorder) AddIstioOperators(istioOperators ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIstioOperators", reflect.TypeOf((*MockBuilder)(nil).AddIstioOperators), istioOperators...)
 }
 
 // AddPodBounceDirectives mocks base method.
@@ -1211,6 +1308,20 @@ func (m *MockBuilder) GetIssuedCertificates() v1sets.IssuedCertificateSet {
 func (mr *MockBuilderMockRecorder) GetIssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIssuedCertificates", reflect.TypeOf((*MockBuilder)(nil).GetIssuedCertificates))
+}
+
+// GetIstioOperators mocks base method.
+func (m *MockBuilder) GetIstioOperators() v1alpha1sets.IstioOperatorSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetIstioOperators")
+	ret0, _ := ret[0].(v1alpha1sets.IstioOperatorSet)
+	return ret0
+}
+
+// GetIstioOperators indicates an expected call of GetIstioOperators.
+func (mr *MockBuilderMockRecorder) GetIstioOperators() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIstioOperators", reflect.TypeOf((*MockBuilder)(nil).GetIstioOperators))
 }
 
 // GetPodBounceDirectives mocks base method.

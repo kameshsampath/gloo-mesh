@@ -13,6 +13,7 @@
 // * VirtualServices
 // * Sidecars
 // * AuthorizationPolicies
+// * IstioOperators
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -55,6 +56,10 @@ import (
 	security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1_types "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	install_istio_io_v1alpha1 "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1"
+	install_istio_io_v1alpha1_sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
+	install_istio_io_v1alpha1_types "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 )
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -113,6 +118,12 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	},
+
+	schema.GroupVersionKind{
+		Group:   "install.istio.io",
+		Version: "v1alpha1",
+		Kind:    "IstioOperator",
+	},
 }
 
 // the snapshot of input resources consumed by translation
@@ -141,6 +152,9 @@ type RemoteSnapshot interface {
 
 	// return the set of input AuthorizationPolicies
 	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	// return the set of input IstioOperators
+	IstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error
@@ -180,6 +194,9 @@ type RemoteSyncStatusOptions struct {
 
 	// sync status of AuthorizationPolicy objects
 	AuthorizationPolicy bool
+
+	// sync status of IstioOperator objects
+	IstioOperator bool
 }
 
 type snapshotRemote struct {
@@ -198,6 +215,8 @@ type snapshotRemote struct {
 	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet
 }
 
 func NewRemoteSnapshot(
@@ -217,6 +236,8 @@ func NewRemoteSnapshot(
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet,
+
 ) RemoteSnapshot {
 	return &snapshotRemote{
 		name: name,
@@ -231,6 +252,7 @@ func NewRemoteSnapshot(
 		virtualServices:       virtualServices,
 		sidecars:              sidecars,
 		authorizationPolicies: authorizationPolicies,
+		istioOperators:        istioOperators,
 	}
 }
 
@@ -252,6 +274,8 @@ func NewRemoteSnapshotFromGeneric(
 	sidecarSet := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+
+	istioOperatorSet := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
 
 	for _, snapshot := range genericSnapshot {
 
@@ -349,6 +373,16 @@ func NewRemoteSnapshotFromGeneric(
 			authorizationPolicySet.Insert(authorizationPolicy.(*security_istio_io_v1beta1_types.AuthorizationPolicy))
 		}
 
+		istioOperators := snapshot[schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}]
+
+		for _, istioOperator := range istioOperators {
+			istioOperatorSet.Insert(istioOperator.(*install_istio_io_v1alpha1_types.IstioOperator))
+		}
+
 	}
 	return NewRemoteSnapshot(
 		name,
@@ -362,6 +396,7 @@ func NewRemoteSnapshotFromGeneric(
 		virtualServiceSet,
 		sidecarSet,
 		authorizationPolicySet,
+		istioOperatorSet,
 	)
 }
 
@@ -403,6 +438,10 @@ func (s snapshotRemote) Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet 
 
 func (s snapshotRemote) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
 	return s.authorizationPolicies
+}
+
+func (s snapshotRemote) IstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet {
+	return s.istioOperators
 }
 
 func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error {
@@ -491,6 +530,7 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualServices"] = s.virtualServices.List()
 	snapshotMap["sidecars"] = s.sidecars.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
+	snapshotMap["istioOperators"] = s.istioOperators.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -508,6 +548,7 @@ func (s snapshotRemote) Clone() RemoteSnapshot {
 		virtualServices:       s.virtualServices.Clone(),
 		sidecars:              s.sidecars.Clone(),
 		authorizationPolicies: s.authorizationPolicies.Clone(),
+		istioOperators:        s.istioOperators.Clone(),
 	}
 }
 
@@ -542,6 +583,9 @@ type RemoteBuildOptions struct {
 
 	// List options for composing a snapshot from AuthorizationPolicies
 	AuthorizationPolicies ResourceRemoteBuildOptions
+
+	// List options for composing a snapshot from IstioOperators
+	IstioOperators ResourceRemoteBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -587,6 +631,8 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
@@ -621,6 +667,9 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertIstioOperatorsFromCluster(ctx, cluster, istioOperators, opts.IstioOperators); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -637,6 +686,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		virtualServices,
 		sidecars,
 		authorizationPolicies,
+		istioOperators,
 	)
 
 	return outputSnap, errs
@@ -1066,6 +1116,49 @@ func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx c
 	return nil
 }
 
+func (b *multiClusterRemoteBuilder) insertIstioOperatorsFromCluster(ctx context.Context, cluster string, istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet, opts ResourceRemoteBuildOptions) error {
+	istioOperatorClient, err := install_istio_io_v1alpha1.NewMulticlusterIstioOperatorClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioOperatorList, err := istioOperatorClient.ListIstioOperator(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioOperatorList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		istioOperators.Insert(item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type singleClusterRemoteBuilder struct {
 	mgr         manager.Manager
@@ -1107,6 +1200,8 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	var errs error
 
 	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
@@ -1139,6 +1234,9 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertIstioOperators(ctx, istioOperators, opts.IstioOperators); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewRemoteSnapshot(
 		name,
@@ -1153,6 +1251,7 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 		virtualServices,
 		sidecars,
 		authorizationPolicies,
+		istioOperators,
 	)
 
 	return outputSnap, errs
@@ -1492,6 +1591,40 @@ func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Con
 	return nil
 }
 
+func (b *singleClusterRemoteBuilder) insertIstioOperators(ctx context.Context, istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioOperatorList, err := install_istio_io_v1alpha1.NewIstioOperatorClient(b.mgr.GetClient()).ListIstioOperator(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioOperatorList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		istioOperators.Insert(item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type inMemoryRemoteBuilder struct {
 	getSnapshot func() (resource.ClusterSnapshot, error)
@@ -1526,6 +1659,8 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
@@ -1558,6 +1693,9 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		// insert AuthorizationPolicies
 		case *security_istio_io_v1beta1_types.AuthorizationPolicy:
 			i.insertAuthorizationPolicy(ctx, obj, authorizationPolicies, opts)
+		// insert IstioOperators
+		case *install_istio_io_v1alpha1_types.IstioOperator:
+			i.insertIstioOperator(ctx, obj, istioOperators, opts)
 		}
 	})
 
@@ -1574,6 +1712,7 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		virtualServices,
 		sidecars,
 		authorizationPolicies,
+		istioOperators,
 	), nil
 }
 
@@ -1868,5 +2007,35 @@ func (i *inMemoryRemoteBuilder) insertAuthorizationPolicy(
 
 	if !filteredOut {
 		authorizationPolicySet.Insert(authorizationPolicy)
+	}
+}
+
+func (i *inMemoryRemoteBuilder) insertIstioOperator(
+	ctx context.Context,
+	istioOperator *install_istio_io_v1alpha1_types.IstioOperator,
+	istioOperatorSet install_istio_io_v1alpha1_sets.IstioOperatorSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.IstioOperators.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = istioOperator.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(istioOperator.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		istioOperatorSet.Insert(istioOperator)
 	}
 }

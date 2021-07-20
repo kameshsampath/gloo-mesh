@@ -9,14 +9,16 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1alpha1sets0 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1beta1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1sets1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
 	v1sets2 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
 	v1sets3 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
-	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	v1alpha1sets1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -100,11 +102,39 @@ func (mr *MockLocalSnapshotMockRecorder) Destinations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockLocalSnapshot)(nil).Destinations))
 }
 
+// IstioInstallations mocks base method.
+func (m *MockLocalSnapshot) IstioInstallations() v1alpha1sets0.IstioInstallationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IstioInstallations")
+	ret0, _ := ret[0].(v1alpha1sets0.IstioInstallationSet)
+	return ret0
+}
+
+// IstioInstallations indicates an expected call of IstioInstallations.
+func (mr *MockLocalSnapshotMockRecorder) IstioInstallations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IstioInstallations", reflect.TypeOf((*MockLocalSnapshot)(nil).IstioInstallations))
+}
+
+// IstioOperators mocks base method.
+func (m *MockLocalSnapshot) IstioOperators() v1alpha1sets.IstioOperatorSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IstioOperators")
+	ret0, _ := ret[0].(v1alpha1sets.IstioOperatorSet)
+	return ret0
+}
+
+// IstioOperators indicates an expected call of IstioOperators.
+func (mr *MockLocalSnapshotMockRecorder) IstioOperators() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IstioOperators", reflect.TypeOf((*MockLocalSnapshot)(nil).IstioOperators))
+}
+
 // KubernetesClusters mocks base method.
-func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets.KubernetesClusterSet {
+func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets1.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "KubernetesClusters")
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	ret0, _ := ret[0].(v1alpha1sets1.KubernetesClusterSet)
 	return ret0
 }
 

@@ -9,6 +9,7 @@ import (
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	istiooperator "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -61,6 +62,15 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
+		schema.GroupVersion{
+			Group:   "admin.enterprise." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"IstioInstallation",
+		},
+		istiooperator.SchemeGroupVersion: {
+			"IstioOperator",
+		},
 	}
 
 	IstioNetworkingOutputTypes = OutputSnapshot{
@@ -89,6 +99,9 @@ var (
 				Version: "v1beta1",
 			}: {
 				"XdsConfig",
+			},
+			istiooperator.SchemeGroupVersion: {
+				"IstioOperator",
 			},
 		},
 	}

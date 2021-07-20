@@ -11,9 +11,12 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 
+	install_istio_io_v1alpha1_controllers "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/controller"
 	networking_istio_io_v1alpha3_controllers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/controller"
 	security_istio_io_v1beta1_controllers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/controller"
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1_controllers "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	certificates_mesh_gloo_solo_io_v1_controllers "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/controller"
 	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -32,6 +35,7 @@ import (
 	multicluster_solo_io_v1alpha1_controllers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/controller"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	install_istio_io_v1alpha1 "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -49,6 +53,7 @@ import (
 // * VirtualServices
 // * Sidecars
 // * AuthorizationPolicies
+// * IstioOperators
 // from a remote cluster.
 // * WasmDeployments
 // * RateLimiterServerConfigs
@@ -65,6 +70,8 @@ import (
 // * Workloads
 // * Meshes
 // * AccessLogRecords
+// * IstioInstallations
+// * IstioOperators
 // * Secrets
 // * KubernetesClusters
 // from the local cluster.
@@ -88,8 +95,8 @@ func RegisterInputReconciler(
 	singleClusterReconcileFunc input.SingleClusterReconcileFunc,
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
-	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
-	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
+	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1 install.istio.io/v1alpha1] false 5
+	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 admin.enterprise.mesh.gloo.solo.io/v1alpha1 install.istio.io/v1alpha1 v1 multicluster.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -123,6 +130,9 @@ func RegisterInputReconciler(
 
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+
+	// initialize IstioOperators reconcile loop for remote clusters
+	install_istio_io_v1alpha1_controllers.NewMulticlusterIstioOperatorReconcileLoop("IstioOperator", clusters, options.Remote.IstioOperators).AddMulticlusterIstioOperatorReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize WasmDeployments reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
@@ -189,6 +199,16 @@ func RegisterInputReconciler(
 		return nil, err
 	}
 
+	// initialize IstioInstallations reconcile loop for local cluster
+	if err := admin_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewIstioInstallationReconcileLoop("IstioInstallation", mgr, options.Local.IstioInstallations).RunIstioInstallationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize IstioOperators reconcile loop for local cluster
+	if err := install_istio_io_v1alpha1_controllers.NewIstioOperatorReconcileLoop("IstioOperator", mgr, options.Local.IstioOperators).RunIstioOperatorReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
 	// initialize Secrets reconcile loop for local cluster
 	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options.Local.Secrets).RunSecretReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
@@ -228,6 +248,9 @@ type RemoteReconcileOptions struct {
 
 	// Options for reconciling AuthorizationPolicies
 	AuthorizationPolicies reconcile.Options
+
+	// Options for reconciling IstioOperators
+	IstioOperators reconcile.Options
 
 	// optional predicates for filtering remote events
 	Predicates []predicate.Predicate
@@ -387,6 +410,21 @@ func (r *remoteInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName
 	return err
 }
 
+func (r *remoteInputReconciler) ReconcileIstioOperator(clusterName string, obj *install_istio_io_v1alpha1.IstioOperator) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *remoteInputReconciler) ReconcileIstioOperatorDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
 // Options for reconciling a snapshot in remote clusters
 type LocalReconcileOptions struct {
 
@@ -424,6 +462,12 @@ type LocalReconcileOptions struct {
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
+
+	// Options for reconciling IstioInstallations
+	IstioInstallations reconcile.Options
+
+	// Options for reconciling IstioOperators
+	IstioOperators reconcile.Options
 
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
@@ -626,6 +670,32 @@ func (r *localInputReconciler) ReconcileAccessLogRecord(obj *observability_enter
 }
 
 func (r *localInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileIstioInstallation(obj *admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileIstioInstallationDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileIstioOperator(obj *install_istio_io_v1alpha1.IstioOperator) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileIstioOperatorDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

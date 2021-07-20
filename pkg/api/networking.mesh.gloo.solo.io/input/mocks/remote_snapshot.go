@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
@@ -123,6 +124,20 @@ func (m *MockRemoteSnapshot) IssuedCertificates() v1sets.IssuedCertificateSet {
 func (mr *MockRemoteSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockRemoteSnapshot)(nil).IssuedCertificates))
+}
+
+// IstioOperators mocks base method.
+func (m *MockRemoteSnapshot) IstioOperators() v1alpha1sets.IstioOperatorSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IstioOperators")
+	ret0, _ := ret[0].(v1alpha1sets.IstioOperatorSet)
+	return ret0
+}
+
+// IstioOperators indicates an expected call of IstioOperators.
+func (mr *MockRemoteSnapshotMockRecorder) IstioOperators() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IstioOperators", reflect.TypeOf((*MockRemoteSnapshot)(nil).IstioOperators))
 }
 
 // MarshalJSON mocks base method.

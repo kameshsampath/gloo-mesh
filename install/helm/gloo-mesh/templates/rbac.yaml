@@ -97,11 +97,27 @@ rules:
   - list
   - watch
 - apiGroups:
+  - admin.enterprise.mesh.gloo.solo.io
+  resources:
+  - istioinstallations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - discovery.mesh.gloo.solo.io
   resources:
   - meshes
   - workloads
   - destinations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - install.istio.io
+  resources:
+  - istiooperators
   verbs:
   - get
   - list
@@ -162,11 +178,25 @@ rules:
   - get
   - update
 - apiGroups:
+  - admin.enterprise.mesh.gloo.solo.io
+  resources:
+  - istioinstallations/status
+  verbs:
+  - get
+  - update
+- apiGroups:
   - discovery.mesh.gloo.solo.io
   resources:
   - meshes/status
   - workloads/status
   - destinations/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - install.istio.io
+  resources:
+  - istiooperators/status
   verbs:
   - get
   - update
@@ -224,6 +254,12 @@ rules:
   resources:
   - issuedcertificates
   - podbouncedirectives
+  verbs:
+  - '*'
+- apiGroups:
+  - install.istio.io
+  resources:
+  - istiooperators
   verbs:
   - '*'
 - apiGroups:

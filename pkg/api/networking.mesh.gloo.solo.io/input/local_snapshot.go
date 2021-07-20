@@ -18,6 +18,8 @@
 // * Workloads
 // * Meshes
 // * AccessLogRecords
+// * IstioInstallations
+// * IstioOperators
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -66,6 +68,14 @@ import (
 	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
+
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
+	install_istio_io_v1alpha1 "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1"
+	install_istio_io_v1alpha1_sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
+	install_istio_io_v1alpha1_types "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -160,6 +170,18 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	},
 
 	schema.GroupVersionKind{
+		Group:   "admin.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "IstioInstallation",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "install.istio.io",
+		Version: "v1alpha1",
+		Kind:    "IstioOperator",
+	},
+
+	schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "Secret",
@@ -209,6 +231,12 @@ type LocalSnapshot interface {
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
+
+	// return the set of input IstioInstallations
+	IstioInstallations() admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet
+
+	// return the set of input IstioOperators
+	IstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -266,6 +294,12 @@ type LocalSyncStatusOptions struct {
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
 
+	// sync status of IstioInstallation objects
+	IstioInstallation bool
+
+	// sync status of IstioOperator objects
+	IstioOperator bool
+
 	// sync status of Secret objects
 	Secret bool
 
@@ -296,6 +330,10 @@ type snapshotLocal struct {
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
+	istioInstallations admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -324,6 +362,10 @@ func NewLocalSnapshot(
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
+	istioInstallations admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet,
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet,
+
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -347,6 +389,8 @@ func NewLocalSnapshot(
 		workloads:                workloads,
 		meshes:                   meshes,
 		accessLogRecords:         accessLogRecords,
+		istioInstallations:       istioInstallations,
+		istioOperators:           istioOperators,
 		secrets:                  secrets,
 		kubernetesClusters:       kubernetesClusters,
 	}
@@ -376,6 +420,10 @@ func NewLocalSnapshotFromGeneric(
 	meshSet := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
+
+	istioInstallationSet := admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewIstioInstallationSet()
+
+	istioOperatorSet := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
 
 	secretSet := v1_sets.NewSecretSet()
 
@@ -523,6 +571,26 @@ func NewLocalSnapshotFromGeneric(
 			accessLogRecordSet.Insert(accessLogRecord.(*observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord))
 		}
 
+		istioInstallations := snapshot[schema.GroupVersionKind{
+			Group:   "admin.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "IstioInstallation",
+		}]
+
+		for _, istioInstallation := range istioInstallations {
+			istioInstallationSet.Insert(istioInstallation.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1_types.IstioInstallation))
+		}
+
+		istioOperators := snapshot[schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}]
+
+		for _, istioOperator := range istioOperators {
+			istioOperatorSet.Insert(istioOperator.(*install_istio_io_v1alpha1_types.IstioOperator))
+		}
+
 		secrets := snapshot[schema.GroupVersionKind{
 			Group:   "",
 			Version: "v1",
@@ -561,6 +629,8 @@ func NewLocalSnapshotFromGeneric(
 		workloadSet,
 		meshSet,
 		accessLogRecordSet,
+		istioInstallationSet,
+		istioOperatorSet,
 		secretSet,
 		kubernetesClusterSet,
 	)
@@ -624,6 +694,14 @@ func (s snapshotLocal) Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
 
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
 	return s.accessLogRecords
+}
+
+func (s snapshotLocal) IstioInstallations() admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet {
+	return s.istioInstallations
+}
+
+func (s snapshotLocal) IstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet {
+	return s.istioOperators
 }
 
 func (s snapshotLocal) Secrets() v1_sets.SecretSet {
@@ -822,6 +900,19 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
+	if opts.IstioInstallation {
+		for _, obj := range s.IstioInstallations().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -950,6 +1041,14 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
+	if opts.IstioInstallation {
+		for _, obj := range s.IstioInstallations().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
@@ -978,6 +1077,8 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["workloads"] = s.workloads.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
+	snapshotMap["istioInstallations"] = s.istioInstallations.List()
+	snapshotMap["istioOperators"] = s.istioOperators.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -1002,6 +1103,8 @@ func (s snapshotLocal) Clone() LocalSnapshot {
 		workloads:                s.workloads.Clone(),
 		meshes:                   s.meshes.Clone(),
 		accessLogRecords:         s.accessLogRecords.Clone(),
+		istioInstallations:       s.istioInstallations.Clone(),
+		istioOperators:           s.istioOperators.Clone(),
 		secrets:                  s.secrets.Clone(),
 		kubernetesClusters:       s.kubernetesClusters.Clone(),
 	}
@@ -1049,6 +1152,12 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from IstioInstallations
+	IstioInstallations ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from IstioOperators
+	IstioOperators ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceLocalBuildOptions
@@ -1106,6 +1215,10 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
+	istioInstallations := admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewIstioInstallationSet()
+
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -1159,6 +1272,12 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertIstioInstallationsFromCluster(ctx, cluster, istioInstallations, opts.IstioInstallations); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertIstioOperatorsFromCluster(ctx, cluster, istioOperators, opts.IstioOperators); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -1186,6 +1305,8 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		workloads,
 		meshes,
 		accessLogRecords,
+		istioInstallations,
+		istioOperators,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1828,6 +1949,92 @@ func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context
 	return nil
 }
 
+func (b *multiClusterLocalBuilder) insertIstioInstallationsFromCluster(ctx context.Context, cluster string, istioInstallations admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet, opts ResourceLocalBuildOptions) error {
+	istioInstallationClient, err := admin_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterIstioInstallationClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "admin.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "IstioInstallation",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioInstallationList, err := istioInstallationClient.ListIstioInstallation(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioInstallationList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		istioInstallations.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterLocalBuilder) insertIstioOperatorsFromCluster(ctx context.Context, cluster string, istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet, opts ResourceLocalBuildOptions) error {
+	istioOperatorClient, err := install_istio_io_v1alpha1.NewMulticlusterIstioOperatorClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioOperatorList, err := istioOperatorClient.ListIstioOperator(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioOperatorList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		istioOperators.Insert(item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterLocalBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -1961,6 +2168,10 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
+	istioInstallations := admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewIstioInstallationSet()
+
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -2012,6 +2223,12 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertIstioInstallations(ctx, istioInstallations, opts.IstioInstallations); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertIstioOperators(ctx, istioOperators, opts.IstioOperators); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -2037,6 +2254,8 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		workloads,
 		meshes,
 		accessLogRecords,
+		istioInstallations,
+		istioOperators,
 		secrets,
 		kubernetesClusters,
 	)
@@ -2544,6 +2763,74 @@ func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, 
 	return nil
 }
 
+func (b *singleClusterLocalBuilder) insertIstioInstallations(ctx context.Context, istioInstallations admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "admin.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "IstioInstallation",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioInstallationList, err := admin_enterprise_mesh_gloo_solo_io_v1alpha1.NewIstioInstallationClient(b.mgr.GetClient()).ListIstioInstallation(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioInstallationList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		istioInstallations.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterLocalBuilder) insertIstioOperators(ctx context.Context, istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	istioOperatorList, err := install_istio_io_v1alpha1.NewIstioOperatorClient(b.mgr.GetClient()).ListIstioOperator(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range istioOperatorList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		istioOperators.Insert(item)
+	}
+
+	return nil
+}
+
 func (b *singleClusterLocalBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -2652,6 +2939,10 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
+	istioInstallations := admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewIstioInstallationSet()
+
+	istioOperators := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -2703,6 +2994,12 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			i.insertAccessLogRecord(ctx, obj, accessLogRecords, opts)
+		// insert IstioInstallations
+		case *admin_enterprise_mesh_gloo_solo_io_v1alpha1_types.IstioInstallation:
+			i.insertIstioInstallation(ctx, obj, istioInstallations, opts)
+		// insert IstioOperators
+		case *install_istio_io_v1alpha1_types.IstioOperator:
+			i.insertIstioOperator(ctx, obj, istioOperators, opts)
 		// insert Secrets
 		case *v1_types.Secret:
 			i.insertSecret(ctx, obj, secrets, opts)
@@ -2730,6 +3027,8 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		workloads,
 		meshes,
 		accessLogRecords,
+		istioInstallations,
+		istioOperators,
 		secrets,
 		kubernetesClusters,
 	), nil
@@ -3172,6 +3471,66 @@ func (i *inMemoryLocalBuilder) insertAccessLogRecord(
 
 	if !filteredOut {
 		accessLogRecordSet.Insert(accessLogRecord)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertIstioInstallation(
+	ctx context.Context,
+	istioInstallation *admin_enterprise_mesh_gloo_solo_io_v1alpha1_types.IstioInstallation,
+	istioInstallationSet admin_enterprise_mesh_gloo_solo_io_v1alpha1_sets.IstioInstallationSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.IstioInstallations.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = istioInstallation.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(istioInstallation.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		istioInstallationSet.Insert(istioInstallation)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertIstioOperator(
+	ctx context.Context,
+	istioOperator *install_istio_io_v1alpha1_types.IstioOperator,
+	istioOperatorSet install_istio_io_v1alpha1_sets.IstioOperatorSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.IstioOperators.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = istioOperator.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(istioOperator.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		istioOperatorSet.Insert(istioOperator)
 	}
 }
 

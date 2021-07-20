@@ -32,6 +32,9 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	install_istio_io_v1alpha1_sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
+	install_istio_io_v1alpha1 "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -96,6 +99,12 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	},
+
+	schema.GroupVersionKind{
+		Group:   "install.istio.io",
+		Version: "v1alpha1",
+		Kind:    "IstioOperator",
+	},
 }
 
 // the snapshot of output resources produced by a translation
@@ -121,6 +130,8 @@ type Snapshot interface {
 	Sidecars() []LabeledSidecarSet
 	// return the set of AuthorizationPolicies with a given set of labels
 	AuthorizationPolicies() []LabeledAuthorizationPolicySet
+	// return the set of IstioOperators with a given set of labels
+	IstioOperators() []LabeledIstioOperatorSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -145,6 +156,7 @@ type snapshot struct {
 	virtualServices       []LabeledVirtualServiceSet
 	sidecars              []LabeledSidecarSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
+	istioOperators        []LabeledIstioOperatorSet
 	clusters              []string
 }
 
@@ -161,6 +173,7 @@ func NewSnapshot(
 	virtualServices []LabeledVirtualServiceSet,
 	sidecars []LabeledSidecarSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
+	istioOperators []LabeledIstioOperatorSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
@@ -176,6 +189,7 @@ func NewSnapshot(
 		virtualServices:       virtualServices,
 		sidecars:              sidecars,
 		authorizationPolicies: authorizationPolicies,
+		istioOperators:        istioOperators,
 		clusters:              clusters,
 	}
 }
@@ -199,6 +213,8 @@ func NewLabelPartitionedSnapshot(
 	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -242,6 +258,10 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	partitionedIstioOperators, err := partitionIstioOperatorsByLabel(labelKey, istioOperators)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -256,6 +276,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedVirtualServices,
 		partitionedSidecars,
 		partitionedAuthorizationPolicies,
+		partitionedIstioOperators,
 		clusters...,
 	), nil
 }
@@ -279,6 +300,8 @@ func NewSinglePartitionedSnapshot(
 	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -322,6 +345,10 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	labeledIstioOperators, err := NewLabeledIstioOperatorSet(istioOperators, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
 
 	return NewSnapshot(
 		name,
@@ -336,6 +363,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
 		[]LabeledSidecarSet{labeledSidecars},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
+		[]LabeledIstioOperatorSet{labeledIstioOperators},
 		clusters...,
 	), nil
 }
@@ -372,6 +400,9 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.istioOperators {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -413,6 +444,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.istioOperators {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -863,6 +897,50 @@ func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_i
 	return partitionedAuthorizationPolicies, nil
 }
 
+func partitionIstioOperatorsByLabel(labelKey string, set install_istio_io_v1alpha1_sets.IstioOperatorSet) ([]LabeledIstioOperatorSet, error) {
+	setsByLabel := map[string]install_istio_io_v1alpha1_sets.IstioOperatorSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "IstioOperator", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "IstioOperator", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedIstioOperators []LabeledIstioOperatorSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledIstioOperatorSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedIstioOperators = append(partitionedIstioOperators, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedIstioOperators, func(i, j int) bool {
+		leftLabelValue := partitionedIstioOperators[i].Labels()[labelKey]
+		rightLabelValue := partitionedIstioOperators[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedIstioOperators, nil
+}
+
 func (s snapshot) IssuedCertificates() []LabeledIssuedCertificateSet {
 	return s.issuedCertificates
 }
@@ -901,6 +979,10 @@ func (s snapshot) Sidecars() []LabeledSidecarSet {
 
 func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 	return s.authorizationPolicies
+}
+
+func (s snapshot) IstioOperators() []LabeledIstioOperatorSet {
+	return s.istioOperators
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -959,6 +1041,12 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		authorizationPolicySet = authorizationPolicySet.Union(set.Set())
 	}
 	snapshotMap["authorizationPolicies"] = authorizationPolicySet.List()
+
+	istioOperatorSet := install_istio_io_v1alpha1_sets.NewIstioOperatorSet()
+	for _, set := range s.istioOperators {
+		istioOperatorSet = istioOperatorSet.Union(set.Set())
+	}
+	snapshotMap["istioOperators"] = istioOperatorSet.List()
 
 	snapshotMap["clusters"] = s.clusters
 
@@ -1645,6 +1733,74 @@ func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
 	}
 }
 
+// LabeledIstioOperatorSet represents a set of istioOperators
+// which share a common set of labels.
+// These labels are used to find diffs between IstioOperatorSets.
+type LabeledIstioOperatorSet interface {
+	// returns the set of Labels shared by this IstioOperatorSet
+	Labels() map[string]string
+
+	// returns the set of IstioOperatores with the given labels
+	Set() install_istio_io_v1alpha1_sets.IstioOperatorSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledIstioOperatorSet struct {
+	set    install_istio_io_v1alpha1_sets.IstioOperatorSet
+	labels map[string]string
+}
+
+func NewLabeledIstioOperatorSet(set install_istio_io_v1alpha1_sets.IstioOperatorSet, labels map[string]string) (LabeledIstioOperatorSet, error) {
+	// validate that each IstioOperator contains the labels, else this is not a valid LabeledIstioOperatorSet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on IstioOperator %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledIstioOperatorSet{set: set, labels: labels}, nil
+}
+
+func (l *labeledIstioOperatorSet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledIstioOperatorSet) Set() install_istio_io_v1alpha1_sets.IstioOperatorSet {
+	return l.set
+}
+
+func (l labeledIstioOperatorSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list install_istio_io_v1alpha1.IstioOperatorList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "IstioOperator",
+	}
+}
+
 type builder struct {
 	ctx      context.Context
 	name     string
@@ -1663,6 +1819,8 @@ type builder struct {
 	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -1683,6 +1841,8 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		sidecars:         networking_istio_io_v1alpha3_sets.NewSidecarSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+
+		istioOperators: install_istio_io_v1alpha1_sets.NewIstioOperatorSet(),
 	}
 }
 
@@ -1749,6 +1909,12 @@ type Builder interface {
 
 	// get the collected AuthorizationPolicies
 	GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	// add IstioOperators to the collected outputs
+	AddIstioOperators(istioOperators ...*install_istio_io_v1alpha1.IstioOperator)
+
+	// get the collected IstioOperators
+	GetIstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -1863,6 +2029,15 @@ func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_is
 		b.authorizationPolicies.Insert(obj)
 	}
 }
+func (b *builder) AddIstioOperators(istioOperators ...*install_istio_io_v1alpha1.IstioOperator) {
+	for _, obj := range istioOperators {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output IstioOperator %v", sets.Key(obj))
+		b.istioOperators.Insert(obj)
+	}
+}
 
 func (b *builder) GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
 	return b.issuedCertificates
@@ -1898,6 +2073,10 @@ func (b *builder) GetAuthorizationPolicies() security_istio_io_v1beta1_sets.Auth
 	return b.authorizationPolicies
 }
 
+func (b *builder) GetIstioOperators() install_istio_io_v1alpha1_sets.IstioOperatorSet {
+	return b.istioOperators
+}
+
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
 		b.name,
@@ -1916,6 +2095,8 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.sidecars,
 
 		b.authorizationPolicies,
+
+		b.istioOperators,
 		b.clusters...,
 	)
 }
@@ -1938,6 +2119,8 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.sidecars,
 
 		b.authorizationPolicies,
+
+		b.istioOperators,
 		b.clusters...,
 	)
 }
@@ -1968,6 +2151,8 @@ func (b *builder) Merge(other Builder) {
 	b.AddSidecars(other.GetSidecars().List()...)
 
 	b.AddAuthorizationPolicies(other.GetAuthorizationPolicies().List()...)
+
+	b.AddIstioOperators(other.GetIstioOperators().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -2011,6 +2196,10 @@ func (b *builder) Clone() Builder {
 
 	for _, authorizationPolicy := range b.GetAuthorizationPolicies().List() {
 		clone.AddAuthorizationPolicies(authorizationPolicy.DeepCopy())
+	}
+
+	for _, istioOperator := range b.GetIstioOperators().List() {
+		clone.AddIstioOperators(istioOperator.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -2115,6 +2304,16 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Group:   "security.istio.io",
 			Version: "v1beta1",
 			Kind:    "AuthorizationPolicy",
+		}
+		clusterSnapshots.Insert(cluster, gvk, obj)
+	}
+
+	for _, obj := range b.GetIstioOperators().List() {
+		cluster := obj.GetClusterName()
+		gvk := schema.GroupVersionKind{
+			Group:   "install.istio.io",
+			Version: "v1alpha1",
+			Kind:    "IstioOperator",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
 	}

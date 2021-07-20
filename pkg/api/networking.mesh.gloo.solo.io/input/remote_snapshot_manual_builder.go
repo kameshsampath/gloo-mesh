@@ -17,6 +17,9 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	install_istio_io_v1alpha1_sets "github.com/solo-io/external-apis/pkg/api/istio/install.istio.io/v1alpha1/sets"
+	install_istio_io_v1alpha1 "istio.io/istio/operator/pkg/apis/istio/v1alpha1"
 )
 
 type InputRemoteSnapshotManualBuilder struct {
@@ -35,6 +38,8 @@ type InputRemoteSnapshotManualBuilder struct {
 	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	istioOperators install_istio_io_v1alpha1_sets.IstioOperatorSet
 }
 
 func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManualBuilder {
@@ -54,6 +59,8 @@ func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManual
 		sidecars:         networking_istio_io_v1alpha3_sets.NewSidecarSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+
+		istioOperators: install_istio_io_v1alpha1_sets.NewIstioOperatorSet(),
 	}
 }
 
@@ -74,6 +81,8 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 		i.sidecars,
 
 		i.authorizationPolicies,
+
+		i.istioOperators,
 	)
 }
 func (i *InputRemoteSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) *InputRemoteSnapshotManualBuilder {
@@ -114,5 +123,9 @@ func (i *InputRemoteSnapshotManualBuilder) AddSidecars(sidecars []*networking_is
 }
 func (i *InputRemoteSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputRemoteSnapshotManualBuilder {
 	i.authorizationPolicies.Insert(authorizationPolicies...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddIstioOperators(istioOperators []*install_istio_io_v1alpha1.IstioOperator) *InputRemoteSnapshotManualBuilder {
+	i.istioOperators.Insert(istioOperators...)
 	return i
 }
