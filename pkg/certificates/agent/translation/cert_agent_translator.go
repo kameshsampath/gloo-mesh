@@ -180,14 +180,16 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 		return eris.Errorf("certificate request %v failed to be signed by Issuer: %v", sets.Key(certificateRequest), certificateRequest.Status.Error)
 	}
 
+	// This is actually the chain, deal accordingly.
 	signedCert := certificateRequest.Status.SignedCertificate
+
 	signingRootCA := certificateRequest.Status.SigningRootCa
 
-	issuedCertificateData := secrets.IntermediateCAData{
-		RootCAData: secrets.RootCAData{
-			RootCert: signingRootCA,
-		},
-		CertChain:    utils.AppendRootCerts(signedCert, signingRootCA),
+	issuedCertificateData := secrets.CAData{
+		RootCert: signingRootCA,
+		// TODO: Make this actually work
+		CertChain: utils.AppendRootCerts(signedCert, signingRootCA),
+		// TODO: Separate from chain
 		CaCert:       signedCert,
 		CaPrivateKey: privateKey,
 	}

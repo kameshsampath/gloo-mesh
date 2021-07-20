@@ -2,10 +2,10 @@ package translation
 
 import (
 	"context"
-
 	"github.com/rotisserie/eris"
 	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	utils2 "github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -72,20 +72,22 @@ func (s *secretTranslator) Translate(
 		return nil, eris.Wrapf(err, "failed to find issuer's signing certificate matching issued request %v", sets.Key(issuedCertificate))
 	}
 
-	signingCA := secrets.RootCADataFromSecretData(signingCertificateSecret.Data)
+	signingCA := secrets.CADataFromSecretData(signingCertificateSecret.Data)
 
 	// generate the issued cert PEM encoded bytes
 	signedCert, err := utils.GenCertForCSR(
 		issuedCertificate.Spec.Hosts,
 		certificateRequest.Spec.GetCertificateSigningRequest(),
-		signingCA.RootCert,
-		signingCA.PrivateKey,
+		signingCA.CaCert,
+		signingCA.CaPrivateKey,
 		issuedCertificate.Spec.GetCertOptions().GetTtlDays(),
 	)
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))
 	}
 
+	// TODO: Prepend signing CA to chain
+	utils2.AppendRootCerts()
 	return &Output{
 		SignedCertificate: signedCert,
 		SigningRootCa:     signingCA.RootCert,

@@ -387,7 +387,7 @@ func buildDefaultCertOptions(
 
 func generateSelfSignedCert(
 	builtinCA *certificatesv1.CommonCertOptions,
-) (*secrets.RootCAData, error) {
+) (*secrets.CAData, error) {
 	certOptions := buildDefaultCertOptions(builtinCA, defaultOrgName)
 	options := util.CertOptions{
 		Org:          certOptions.GetOrgName(),
@@ -401,9 +401,10 @@ func generateSelfSignedCert(
 	if err != nil {
 		return nil, err
 	}
-	rootCaData := &secrets.RootCAData{
-		PrivateKey: key,
-		RootCert:   cert,
+	rootCaData := &secrets.CAData{
+		CaPrivateKey: key,
+		CaCert:       cert,
+		RootCert:     cert,
 	}
 	return rootCaData, nil
 }
