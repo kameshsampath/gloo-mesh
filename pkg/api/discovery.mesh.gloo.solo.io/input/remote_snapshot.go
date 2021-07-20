@@ -3,6 +3,7 @@
 //go:generate mockgen -source ./remote_snapshot.go -destination mocks/remote_snapshot.go
 
 // The Input DiscoveryInputSnapshot contains the set of all:
+// * IssuedCertificates
 // * Meshes
 // * ConfigMaps
 // * Services
@@ -35,9 +36,14 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
 	appmesh_k8s_aws_v1beta2_types "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
@@ -54,6 +60,12 @@ import (
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
 var DiscoveryInputSnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "IssuedCertificate",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "appmesh.k8s.aws",
@@ -112,6 +124,9 @@ var DiscoveryInputSnapshotGVKs = []schema.GroupVersionKind{
 // the snapshot of input resources consumed by translation
 type DiscoveryInputSnapshot interface {
 
+	// return the set of input IssuedCertificates
+	IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+
 	// return the set of input Meshes
 	Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
 
@@ -134,6 +149,12 @@ type DiscoveryInputSnapshot interface {
 	DaemonSets() apps_v1_sets.DaemonSetSet
 	// return the set of input StatefulSets
 	StatefulSets() apps_v1_sets.StatefulSetSet
+	// update the status of all input objects which support
+	// the Status subresource (across multiple clusters)
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts DiscoveryInputSyncStatusOptions) error
+	// update the status of all input objects which support
+	// the Status subresource (in the local cluster)
+	SyncStatuses(ctx context.Context, c client.Client, opts DiscoveryInputSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
 
@@ -143,6 +164,9 @@ type DiscoveryInputSnapshot interface {
 
 // options for syncing input object statuses
 type DiscoveryInputSyncStatusOptions struct {
+
+	// sync status of IssuedCertificate objects
+	IssuedCertificate bool
 
 	// sync status of Mesh objects
 	Mesh bool
@@ -171,6 +195,8 @@ type DiscoveryInputSyncStatusOptions struct {
 type snapshotDiscoveryInput struct {
 	name string
 
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
 	configMaps v1_sets.ConfigMapSet
@@ -187,6 +213,8 @@ type snapshotDiscoveryInput struct {
 
 func NewDiscoveryInputSnapshot(
 	name string,
+
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
 
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
 
@@ -205,16 +233,17 @@ func NewDiscoveryInputSnapshot(
 	return &snapshotDiscoveryInput{
 		name: name,
 
-		meshes:       meshes,
-		configMaps:   configMaps,
-		services:     services,
-		pods:         pods,
-		endpoints:    endpoints,
-		nodes:        nodes,
-		deployments:  deployments,
-		replicaSets:  replicaSets,
-		daemonSets:   daemonSets,
-		statefulSets: statefulSets,
+		issuedCertificates: issuedCertificates,
+		meshes:             meshes,
+		configMaps:         configMaps,
+		services:           services,
+		pods:               pods,
+		endpoints:          endpoints,
+		nodes:              nodes,
+		deployments:        deployments,
+		replicaSets:        replicaSets,
+		daemonSets:         daemonSets,
+		statefulSets:       statefulSets,
 	}
 }
 
@@ -222,6 +251,8 @@ func NewDiscoveryInputSnapshotFromGeneric(
 	name string,
 	genericSnapshot resource.ClusterSnapshot,
 ) DiscoveryInputSnapshot {
+
+	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
 
 	meshSet := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
@@ -237,6 +268,16 @@ func NewDiscoveryInputSnapshotFromGeneric(
 	statefulSetSet := apps_v1_sets.NewStatefulSetSet()
 
 	for _, snapshot := range genericSnapshot {
+
+		issuedCertificates := snapshot[schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "IssuedCertificate",
+		}]
+
+		for _, issuedCertificate := range issuedCertificates {
+			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate))
+		}
 
 		meshes := snapshot[schema.GroupVersionKind{
 			Group:   "appmesh.k8s.aws",
@@ -334,6 +375,7 @@ func NewDiscoveryInputSnapshotFromGeneric(
 	}
 	return NewDiscoveryInputSnapshot(
 		name,
+		issuedCertificateSet,
 		meshSet,
 		configMapSet,
 		serviceSet,
@@ -345,6 +387,10 @@ func NewDiscoveryInputSnapshotFromGeneric(
 		daemonSetSet,
 		statefulSetSet,
 	)
+}
+
+func (s snapshotDiscoveryInput) IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
+	return s.issuedCertificates
 }
 
 func (s snapshotDiscoveryInput) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
@@ -387,9 +433,43 @@ func (s snapshotDiscoveryInput) StatefulSets() apps_v1_sets.StatefulSetSet {
 	return s.statefulSets
 }
 
+func (s snapshotDiscoveryInput) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts DiscoveryInputSyncStatusOptions) error {
+	var errs error
+
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	return errs
+}
+
+func (s snapshotDiscoveryInput) SyncStatuses(ctx context.Context, c client.Client, opts DiscoveryInputSyncStatusOptions) error {
+	var errs error
+
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	return errs
+}
+
 func (s snapshotDiscoveryInput) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
+	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
@@ -407,16 +487,17 @@ func (s snapshotDiscoveryInput) Clone() DiscoveryInputSnapshot {
 	return &snapshotDiscoveryInput{
 		name: s.name,
 
-		meshes:       s.meshes.Clone(),
-		configMaps:   s.configMaps.Clone(),
-		services:     s.services.Clone(),
-		pods:         s.pods.Clone(),
-		endpoints:    s.endpoints.Clone(),
-		nodes:        s.nodes.Clone(),
-		deployments:  s.deployments.Clone(),
-		replicaSets:  s.replicaSets.Clone(),
-		daemonSets:   s.daemonSets.Clone(),
-		statefulSets: s.statefulSets.Clone(),
+		issuedCertificates: s.issuedCertificates.Clone(),
+		meshes:             s.meshes.Clone(),
+		configMaps:         s.configMaps.Clone(),
+		services:           s.services.Clone(),
+		pods:               s.pods.Clone(),
+		endpoints:          s.endpoints.Clone(),
+		nodes:              s.nodes.Clone(),
+		deployments:        s.deployments.Clone(),
+		replicaSets:        s.replicaSets.Clone(),
+		daemonSets:         s.daemonSets.Clone(),
+		statefulSets:       s.statefulSets.Clone(),
 	}
 }
 
@@ -427,6 +508,9 @@ type DiscoveryInputBuilder interface {
 
 // Options for building a snapshot
 type DiscoveryInputBuildOptions struct {
+
+	// List options for composing a snapshot from IssuedCertificates
+	IssuedCertificates ResourceDiscoveryInputBuildOptions
 
 	// List options for composing a snapshot from Meshes
 	Meshes ResourceDiscoveryInputBuildOptions
@@ -481,6 +565,8 @@ func NewMultiClusterDiscoveryInputBuilder(
 
 func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts DiscoveryInputBuildOptions) (DiscoveryInputSnapshot, error) {
 
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
@@ -498,6 +584,9 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 
 	for _, cluster := range b.clusters.ListClusters() {
 
+		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -534,6 +623,7 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	outputSnap := NewDiscoveryInputSnapshot(
 		name,
 
+		issuedCertificates,
 		meshes,
 		configMaps,
 		services,
@@ -547,6 +637,49 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	)
 
 	return outputSnap, errs
+}
+
+func (b *multiClusterDiscoveryInputBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceDiscoveryInputBuildOptions) error {
+	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "IssuedCertificate",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range issuedCertificateList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		issuedCertificates.Insert(item)
+	}
+
+	return nil
 }
 
 func (b *multiClusterDiscoveryInputBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
@@ -999,6 +1132,8 @@ func NewSingleClusterDiscoveryInputBuilderWithClusterName(
 
 func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts DiscoveryInputBuildOptions) (DiscoveryInputSnapshot, error) {
 
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
@@ -1014,6 +1149,9 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 
 	var errs error
 
+	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1048,6 +1186,7 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 	outputSnap := NewDiscoveryInputSnapshot(
 		name,
 
+		issuedCertificates,
 		meshes,
 		configMaps,
 		services,
@@ -1061,6 +1200,40 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 	)
 
 	return outputSnap, errs
+}
+
+func (b *singleClusterDiscoveryInputBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceDiscoveryInputBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "IssuedCertificate",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range issuedCertificateList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		issuedCertificates.Insert(item)
+	}
+
+	return nil
 }
 
 func (b *singleClusterDiscoveryInputBuilder) insertMeshes(ctx context.Context, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
@@ -1416,6 +1589,8 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 		return nil, err
 	}
 
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
@@ -1431,6 +1606,9 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
+		// insert IssuedCertificates
+		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
+			i.insertIssuedCertificate(ctx, obj, issuedCertificates, opts)
 		// insert Meshes
 		case *appmesh_k8s_aws_v1beta2_types.Mesh:
 			i.insertMesh(ctx, obj, meshes, opts)
@@ -1467,6 +1645,7 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 	return NewDiscoveryInputSnapshot(
 		name,
 
+		issuedCertificates,
 		meshes,
 		configMaps,
 		services,
@@ -1478,6 +1657,36 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 		daemonSets,
 		statefulSets,
 	), nil
+}
+
+func (i *inMemoryDiscoveryInputBuilder) insertIssuedCertificate(
+	ctx context.Context,
+	issuedCertificate *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate,
+	issuedCertificateSet certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.IssuedCertificates.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = issuedCertificate.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(issuedCertificate.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		issuedCertificateSet.Insert(issuedCertificate)
+	}
 }
 
 func (i *inMemoryDiscoveryInputBuilder) insertMesh(

@@ -66,7 +66,7 @@ func (v *applier) Apply(
 
 	validateConfigTargetReferences(input)
 
-	applyPoliciesToConfigTargets(input)
+	applyPoliciesToConfigTargets(input, generated)
 
 	// perform a dry run of translation to find any errors
 	// Deep copy the input snapshot so that we start the 2nd run with a clean slate
@@ -139,7 +139,10 @@ func validateConfigTargetReferences(input input.LocalSnapshot) {
 }
 
 // Apply networking configuration policies to relevant discovery entities.
-func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
+func applyPoliciesToConfigTargets(
+	input input.LocalSnapshot,
+	generated input.RemoteSnapshot,
+) {
 	for _, destination := range input.Destinations().List() {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)

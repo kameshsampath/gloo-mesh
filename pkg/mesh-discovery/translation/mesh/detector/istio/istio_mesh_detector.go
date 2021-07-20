@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -120,6 +122,14 @@ func (d *meshDetector) detectMesh(
 		contextutils.LoggerFrom(d.ctx).Debugw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
 	}
 
+	objMeta := utils.DiscoveredObjectMeta(deployment)
+
+	var issuedCertStatus *certificatesv1.IssuedCertificateStatus
+	// If an issuedCert exists for this mesh, persist the status
+	if issuedCert, err := in.IssuedCertificates().Find(&objMeta); err == nil {
+		issuedCertStatus = &issuedCert.Status
+	}
+
 	mesh := &discoveryv1.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: discoveryv1.MeshSpec{
@@ -139,7 +149,8 @@ func (d *meshDetector) detectMesh(
 					IngressGateways:      ingressGateways,
 				},
 			},
-			AgentInfo: agent,
+			AgentInfo:               agent,
+			IssuedCertificateStatus: issuedCertStatus,
 		},
 	}
 

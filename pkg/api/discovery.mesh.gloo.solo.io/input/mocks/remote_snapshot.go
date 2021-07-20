@@ -12,7 +12,10 @@ import (
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1sets1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockDiscoveryInputSnapshot is a mock of DiscoveryInputSnapshot interface.
@@ -106,6 +109,20 @@ func (m *MockDiscoveryInputSnapshot) Endpoints() v1sets0.EndpointsSet {
 func (mr *MockDiscoveryInputSnapshotMockRecorder) Endpoints() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Endpoints))
+}
+
+// IssuedCertificates mocks base method.
+func (m *MockDiscoveryInputSnapshot) IssuedCertificates() v1sets1.IssuedCertificateSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IssuedCertificates")
+	ret0, _ := ret[0].(v1sets1.IssuedCertificateSet)
+	return ret0
+}
+
+// IssuedCertificates indicates an expected call of IssuedCertificates.
+func (mr *MockDiscoveryInputSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).IssuedCertificates))
 }
 
 // MarshalJSON mocks base method.
@@ -205,6 +222,34 @@ func (m *MockDiscoveryInputSnapshot) StatefulSets() v1sets.StatefulSetSet {
 func (mr *MockDiscoveryInputSnapshotMockRecorder) StatefulSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatefulSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).StatefulSets))
+}
+
+// SyncStatuses mocks base method.
+func (m *MockDiscoveryInputSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.DiscoveryInputSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatuses indicates an expected call of SyncStatuses.
+func (mr *MockDiscoveryInputSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).SyncStatuses), ctx, c, opts)
+}
+
+// SyncStatusesMultiCluster mocks base method.
+func (m *MockDiscoveryInputSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.DiscoveryInputSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster.
+func (mr *MockDiscoveryInputSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
 }
 
 // MockDiscoveryInputBuilder is a mock of DiscoveryInputBuilder interface.
