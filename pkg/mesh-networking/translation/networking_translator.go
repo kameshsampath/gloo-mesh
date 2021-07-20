@@ -30,7 +30,6 @@ type Translator interface {
 		ctx context.Context,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
-		generated input.RemoteSnapshot,
 		reporter reporting.Reporter,
 	) (*Outputs, error)
 }
@@ -58,7 +57,6 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
-	generated input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (*Outputs, error) {
 	t.totalTranslates++

@@ -34,7 +34,6 @@ type Applier interface {
 		ctx context.Context,
 		input input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot, // Remote resources which the user has created. (doesn't have our labels)
-		generated input.RemoteSnapshot, // Remote resources which we have created. (has our labels)
 	)
 }
 
@@ -55,7 +54,6 @@ func (v *applier) Apply(
 	ctx context.Context,
 	input input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
-	generated input.RemoteSnapshot,
 ) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
@@ -66,11 +64,11 @@ func (v *applier) Apply(
 
 	validateConfigTargetReferences(input)
 
-	applyPoliciesToConfigTargets(input, generated)
+	applyPoliciesToConfigTargets(input)
 
 	// perform a dry run of translation to find any errors
 	// Deep copy the input snapshot so that we start the 2nd run with a clean slate
-	_, err := v.translator.Translate(ctx, input.Clone(), userSupplied, generated, reporter)
+	_, err := v.translator.Translate(ctx, input.Clone(), userSupplied, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
@@ -139,10 +137,7 @@ func validateConfigTargetReferences(input input.LocalSnapshot) {
 }
 
 // Apply networking configuration policies to relevant discovery entities.
-func applyPoliciesToConfigTargets(
-	input input.LocalSnapshot,
-	generated input.RemoteSnapshot,
-) {
+func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 	for _, destination := range input.Destinations().List() {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)
