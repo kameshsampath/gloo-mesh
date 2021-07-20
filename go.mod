@@ -32,6 +32,7 @@ require (
 	cuelang.org/go v0.4.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
 	github.com/aws/aws-sdk-go v1.38.3
 	github.com/cheggaaa/pb/v3 v3.0.7 // indirect
@@ -79,12 +80,12 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.3
-	github.com/solo-io/external-apis v0.1.5
+	github.com/solo-io/external-apis v0.1.6
 	github.com/solo-io/go-list-licenses v0.1.3
 	github.com/solo-io/go-utils v0.21.9
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.18.1
+	github.com/solo-io/skv2 v0.18.3
 	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
