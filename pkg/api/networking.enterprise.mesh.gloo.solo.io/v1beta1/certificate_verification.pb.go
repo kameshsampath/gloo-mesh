@@ -138,8 +138,45 @@ func (CertificateVerificationStatus_State) EnumDescriptor() ([]byte, []int) {
 }
 
 //
-//CertificateVerifications are the resource by which a user can verify the traffic
+//CertificateVerification is the resource by which a user can verify the traffic
 //during a VirtualMesh certificate rotation.
+//
+//To do this, a user would create a CertificateVerification containing:
+//1. The step being verified
+//2. The action which the user would like to kick off
+//3. The VirtualMesh being rotated
+//
+//
+//An example of a Verification for a Virtual Mesh which has just added a new root successfully would be:
+//```yaml
+//apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
+//kind: CertificateVerification
+//metadata:
+//name: successful-verification
+//namespace: gloo-mesh
+//spec:
+//action: CONTINUE
+//virtualMesh:
+//name: my-virtual-mesh
+//namespace: gloo-mesh
+//step: ADDING_NEW_ROOT
+//```
+//
+//An example of a Verification  for a Virtual Mesh which has failed to propagate the new intermediate would be
+//the following: In addition this example does not specify a namespace for the virtualMesh because it is
+//in the same namesapce as the CertificateVerification.
+//```yaml
+//apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
+//kind: CertificateVerification
+//metadata:
+//name: successful-verification
+//namespace: gloo-mesh
+//spec:
+//action: ROLLBACK
+//virtualMesh:
+//name: my-virtual-mesh
+//step: PROPAGATING_NEW_INTERMEDIATE
+//```
 type CertificateVerificationSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -2,8 +2,9 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"strings"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
