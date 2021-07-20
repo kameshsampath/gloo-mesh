@@ -1413,6 +1413,17 @@ spec:
                           type: object
                         type: array
                     type: object
+                  notRequestPrincipals:
+                    description: An optional list of request identities to not match.
+                    items:
+                      type: string
+                    type: array
+                  requestPrincipals:
+                    description: An optional list of request identities (e.g. iss/sub
+                      claims) to the mTLS principal.
+                    items:
+                      type: string
+                    type: array
                 type: object
               type: array
           type: object

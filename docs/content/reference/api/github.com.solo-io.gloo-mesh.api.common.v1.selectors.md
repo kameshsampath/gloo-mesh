@@ -110,6 +110,8 @@ Select Destination identities using one or more platform-specific selectors.
 | ----- | ---- | ----- | ----------- |
 | kubeIdentityMatcher | [common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher" >}}) |  | Match request identities based on the Kubernetes namespace and cluster. |
   | kubeServiceAccountRefs | [common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs" >}}) |  | Match request identities based on the Kubernetes service account of the request. |
+  | requestPrincipals | []string | repeated | An optional list of request identities (e.g. iss/sub claims) to the mTLS principal. |
+  | notRequestPrincipals | []string | repeated | An optional list of request identities to not match. |
   
 
 

@@ -107,6 +107,12 @@ message IdentitySelector {
             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
         */
         repeated string clusters = 2;
+
+        // An optional list of request identities (e.g. iss/sub claims) to the mTLS principal.
+        repeated string requestPrincipals = 3;
+
+        // An optional list of request identities to not match.
+        repeated string notRequestPrincipals = 4;
     }
 
     message KubeServiceAccountRefs {

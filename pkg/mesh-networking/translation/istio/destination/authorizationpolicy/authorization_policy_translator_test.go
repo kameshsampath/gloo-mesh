@@ -207,6 +207,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 									KubeIdentityMatcher: &commonv1.IdentitySelector_KubeIdentityMatcher{
 										Namespaces: []string{"ns1"},
 									},
+									RequestPrincipals: []string{"test/user"},
 								},
 								{
 									KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
@@ -217,6 +218,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 											},
 										},
 									},
+									NotRequestPrincipals: []string{"blocked/user"},
 								},
 							},
 							AllowedPaths:   []string{"/path1"},
@@ -277,7 +279,8 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 						From: []*securityv1beta1spec.Rule_From{
 							{
 								Source: &securityv1beta1spec.Source{
-									Namespaces: []string{"ns1"},
+									Namespaces:        []string{"ns1"},
+									RequestPrincipals: []string{"test/user"},
 								},
 							},
 							{
@@ -286,6 +289,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 										"cluster1.local/ns/ns2/sa/sa2",
 										"cluster2.local/ns/ns2/sa/sa2",
 									},
+									NotRequestPrincipals: []string{"blocked/user"},
 								},
 							},
 						},

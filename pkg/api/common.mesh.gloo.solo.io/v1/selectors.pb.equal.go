@@ -144,6 +144,28 @@ func (m *IdentitySelector) Equal(that interface{}) bool {
 		}
 	}
 
+	if len(m.GetRequestPrincipals()) != len(target.GetRequestPrincipals()) {
+		return false
+	}
+	for idx, v := range m.GetRequestPrincipals() {
+
+		if strings.Compare(v, target.GetRequestPrincipals()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetNotRequestPrincipals()) != len(target.GetNotRequestPrincipals()) {
+		return false
+	}
+	for idx, v := range m.GetNotRequestPrincipals() {
+
+		if strings.Compare(v, target.GetNotRequestPrincipals()[idx]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }
 
