@@ -61,9 +61,10 @@ var _ = Describe("CertIssueTranslator", func() {
 
 			translator := translation.NewTranslator(mockSecretClient)
 
-			rootCaData := &secrets.RootCAData{
-				PrivateKey: []byte(rootKey),
-				RootCert:   []byte(rootCert),
+			rootCaData := &secrets.CAData{
+				CaPrivateKey: []byte(rootKey),
+				CaCert:       []byte(rootCert),
+				RootCert:     []byte(rootCert),
 			}
 
 			secret := &corev1.Secret{

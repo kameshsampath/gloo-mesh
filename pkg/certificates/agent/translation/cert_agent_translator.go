@@ -182,14 +182,12 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 
 	// This is actually the chain, deal accordingly.
 	signedCert := certificateRequest.Status.SignedCertificate
-
 	signingRootCA := certificateRequest.Status.SigningRootCa
+	signingCaChain := certificateRequest.Status.CertChain
 
 	issuedCertificateData := secrets.CAData{
-		RootCert: signingRootCA,
-		// TODO: Make this actually work
-		CertChain: utils.AppendRootCerts(signedCert, signingRootCA),
-		// TODO: Separate from chain
+		RootCert:     signingRootCA,
+		CertChain:    signingCaChain,
 		CaCert:       signedCert,
 		CaPrivateKey: privateKey,
 	}

@@ -107,3 +107,22 @@ func AppendRootCerts(caCert, rootCert []byte) []byte {
 	}
 	return caCertCopy
 }
+
+func PrependCerts(caCert, rootCert []byte) []byte {
+	var caCertCopy []byte
+	if len(caCert) > 0 {
+		// Copy the input certificate
+		caCertCopy = make([]byte, len(caCert))
+		copy(caCertCopy, caCert)
+	}
+	if len(rootCert) > 0 {
+		if len(caCertCopy) > 0 {
+			// Append a newline after the last cert
+			// Certs are very fooey, this is copy pasted from Mesh, plz do not touch
+			// Love, eitan
+			caCertCopy = []byte(strings.TrimSuffix(string(caCertCopy), "\n") + "\n")
+		}
+		caCertCopy = append(caCertCopy, rootCert...)
+	}
+	return caCertCopy
+}

@@ -1,5 +1,12 @@
 package secrets
 
+import (
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"istio.io/istio/security/pkg/pki/util"
+)
+
 const (
 	/*
 		TODO(ilackarms): document the expected structure of secrets (required for VirtualMeshes  using a user-provided root CA)
@@ -20,6 +27,45 @@ type CAData struct {
 	CertChain    []byte
 	CaCert       []byte
 	CaPrivateKey []byte
+}
+
+// Verify the CA Data
+// Copied from https://github.com/istio/istio/blob/943ba0765876590d5c6da89d5df034fe0ea0808a/security/pkg/pki/util/keycertbundle.go#L264
+func (d CAData) Verify() error {
+	// Verify the cert can be verified from the root cert through the cert chain.
+	rcp := x509.NewCertPool()
+	rcp.AppendCertsFromPEM(d.RootCert)
+
+	icp := x509.NewCertPool()
+	icp.AppendCertsFromPEM(d.CertChain)
+
+	opts := x509.VerifyOptions{
+		Intermediates: icp,
+		Roots:         rcp,
+	}
+	cert, err := util.ParsePemEncodedCertificate(d.CaCert)
+	if err != nil {
+		return fmt.Errorf("failed to parse cert PEM: %v", err)
+	}
+	chains, err := cert.Verify(opts)
+
+	if len(chains) == 0 || err != nil {
+		return fmt.Errorf(
+			"cannot verify the cert with the provided root chain and cert "+
+				"pool with error: %v", err)
+	}
+
+	// Verify that the key can be correctly parsed.
+	if _, err = util.ParsePemEncodedKey(d.CaPrivateKey); err != nil {
+		return fmt.Errorf("failed to parse private key PEM: %v", err)
+	}
+
+	// Verify the cert and key match.
+	if _, err := tls.X509KeyPair(d.CaCert, d.CaPrivateKey); err != nil {
+		return fmt.Errorf("the cert does not match the key")
+	}
+
+	return nil
 }
 
 func (d CAData) ToSecretData() map[string][]byte {
