@@ -5782,6 +5782,9 @@ spec:
     kind: CertificateVerification
     listKind: CertificateVerificationList
     plural: certificateverifications
+    shortNames:
+    - cv
+    - cvs
     singular: certificateverification
   preserveUnknownFields: false
   scope: Namespaced
