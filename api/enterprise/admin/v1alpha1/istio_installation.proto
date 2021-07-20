@@ -1,7 +1,7 @@
 syntax = "proto3";
 package admin.enterprise.mesh.gloo.solo.io;
 
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 

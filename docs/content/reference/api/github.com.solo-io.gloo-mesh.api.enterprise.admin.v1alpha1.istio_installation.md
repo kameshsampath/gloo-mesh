@@ -56,9 +56,9 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IstioInstallation metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | state | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.State" >}}) |  | The current state of the IstioOperator. |
+  | state | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1alpha1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.State" >}}) |  | The current state of the IstioOperator. |
   | message | string |  | A human readable message about the current state of the IstioInstallation. |
-  | istioOperatorStatuses | [][admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry" >}}) | repeated | The status of each IstioOperator that should be installed by Gloo Mesh, where the key is the concatenation of the IstioOperator's name, namespace, and cluster and the value is the operator's status. |
+  | istioOperatorStatuses | [][admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1alpha1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatusesEntry" >}}) | repeated | The status of each IstioOperator that should be installed by Gloo Mesh, where the key is the concatenation of the IstioOperator's name, namespace, and cluster and the value is the operator's status. |
   
 
 
@@ -74,7 +74,7 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IstioOperator metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | state | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State" >}}) |  | The current state of the IstioOperator. |
+  | state | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1alpha1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus.State" >}}) |  | The current state of the IstioOperator. |
   | message | string |  | A human readable message about the current state of the IstioOperator. |
   | revision | string |  | The revision tag for the associated Istio components. |
   
@@ -92,7 +92,7 @@ title: "istio_installation.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus" >}}) |  |  |
+  | value | [admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1alpha1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationStatus.IstioOperatorStatus" >}}) |  |  |
   
 
 

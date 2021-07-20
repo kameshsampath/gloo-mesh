@@ -54,7 +54,7 @@ var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceT
 	{Kind: "RoleBinding", ShortNames: []string{"gmrolebinding", "gmrolebindings"}},
 })
 
-var GlooMeshEnterpriseAdminGroup = makeGroup("admin.enterprise", "v1", []ResourceToGenerate{
+var GlooMeshEnterpriseAdminGroup = makeGroup("admin.enterprise", "v1alpha1", []ResourceToGenerate{
 	{Kind: "IstioInstallation"},
 })
 

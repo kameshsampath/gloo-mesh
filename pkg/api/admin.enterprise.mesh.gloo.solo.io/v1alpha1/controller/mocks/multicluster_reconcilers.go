@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
-	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1/controller"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -39,7 +39,7 @@ func (m *MockMulticlusterIstioInstallationReconciler) EXPECT() *MockMulticluster
 }
 
 // ReconcileIstioInstallation mocks base method.
-func (m *MockMulticlusterIstioInstallationReconciler) ReconcileIstioInstallation(clusterName string, obj *v1.IstioInstallation) (reconcile.Result, error) {
+func (m *MockMulticlusterIstioInstallationReconciler) ReconcileIstioInstallation(clusterName string, obj *v1alpha1.IstioInstallation) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIstioInstallation", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)

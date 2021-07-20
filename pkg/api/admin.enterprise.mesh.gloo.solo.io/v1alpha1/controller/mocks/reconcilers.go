@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
-	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1/controller"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -39,7 +39,7 @@ func (m *MockIstioInstallationReconciler) EXPECT() *MockIstioInstallationReconci
 }
 
 // ReconcileIstioInstallation mocks base method.
-func (m *MockIstioInstallationReconciler) ReconcileIstioInstallation(obj *v1.IstioInstallation) (reconcile.Result, error) {
+func (m *MockIstioInstallationReconciler) ReconcileIstioInstallation(obj *v1alpha1.IstioInstallation) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIstioInstallation", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -114,7 +114,7 @@ func (m *MockIstioInstallationFinalizer) EXPECT() *MockIstioInstallationFinalize
 }
 
 // FinalizeIstioInstallation mocks base method.
-func (m *MockIstioInstallationFinalizer) FinalizeIstioInstallation(obj *v1.IstioInstallation) error {
+func (m *MockIstioInstallationFinalizer) FinalizeIstioInstallation(obj *v1alpha1.IstioInstallation) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FinalizeIstioInstallation", obj)
 	ret0, _ := ret[0].(error)
@@ -142,7 +142,7 @@ func (mr *MockIstioInstallationFinalizerMockRecorder) IstioInstallationFinalizer
 }
 
 // ReconcileIstioInstallation mocks base method.
-func (m *MockIstioInstallationFinalizer) ReconcileIstioInstallation(obj *v1.IstioInstallation) (reconcile.Result, error) {
+func (m *MockIstioInstallationFinalizer) ReconcileIstioInstallation(obj *v1alpha1.IstioInstallation) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIstioInstallation", obj)
 	ret0, _ := ret[0].(reconcile.Result)

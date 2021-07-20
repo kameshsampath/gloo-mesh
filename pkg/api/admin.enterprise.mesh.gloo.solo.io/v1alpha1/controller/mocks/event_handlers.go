@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
-	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1/controller"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
+	controller "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
@@ -38,7 +38,7 @@ func (m *MockIstioInstallationEventHandler) EXPECT() *MockIstioInstallationEvent
 }
 
 // CreateIstioInstallation mocks base method.
-func (m *MockIstioInstallationEventHandler) CreateIstioInstallation(obj *v1.IstioInstallation) error {
+func (m *MockIstioInstallationEventHandler) CreateIstioInstallation(obj *v1alpha1.IstioInstallation) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateIstioInstallation", obj)
 	ret0, _ := ret[0].(error)
@@ -52,7 +52,7 @@ func (mr *MockIstioInstallationEventHandlerMockRecorder) CreateIstioInstallation
 }
 
 // DeleteIstioInstallation mocks base method.
-func (m *MockIstioInstallationEventHandler) DeleteIstioInstallation(obj *v1.IstioInstallation) error {
+func (m *MockIstioInstallationEventHandler) DeleteIstioInstallation(obj *v1alpha1.IstioInstallation) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteIstioInstallation", obj)
 	ret0, _ := ret[0].(error)
@@ -66,7 +66,7 @@ func (mr *MockIstioInstallationEventHandlerMockRecorder) DeleteIstioInstallation
 }
 
 // GenericIstioInstallation mocks base method.
-func (m *MockIstioInstallationEventHandler) GenericIstioInstallation(obj *v1.IstioInstallation) error {
+func (m *MockIstioInstallationEventHandler) GenericIstioInstallation(obj *v1alpha1.IstioInstallation) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericIstioInstallation", obj)
 	ret0, _ := ret[0].(error)
@@ -80,7 +80,7 @@ func (mr *MockIstioInstallationEventHandlerMockRecorder) GenericIstioInstallatio
 }
 
 // UpdateIstioInstallation mocks base method.
-func (m *MockIstioInstallationEventHandler) UpdateIstioInstallation(old, new *v1.IstioInstallation) error {
+func (m *MockIstioInstallationEventHandler) UpdateIstioInstallation(old, new *v1alpha1.IstioInstallation) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateIstioInstallation", old, new)
 	ret0, _ := ret[0].(error)

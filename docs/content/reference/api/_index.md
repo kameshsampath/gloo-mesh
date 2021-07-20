@@ -12,7 +12,7 @@ These docs describe Gloo Mesh CRDs.
 
 ### admin.enterprise.mesh.gloo.solo.io
 
-  - [IstioInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationSpec" >}})
+  - [IstioInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.admin.v1alpha1.istio_installation#admin.enterprise.mesh.gloo.solo.io.IstioInstallationSpec" >}})
 
 
 

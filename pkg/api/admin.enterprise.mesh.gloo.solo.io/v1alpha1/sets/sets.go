@@ -2,10 +2,10 @@
 
 //go:generate mockgen -source ./sets.go -destination mocks/sets.go
 
-package v1sets
+package v1alpha1sets
 
 import (
-	admin_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1"
+	admin_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/admin.enterprise.mesh.gloo.solo.io/v1alpha1"
 
 	"github.com/rotisserie/eris"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -17,13 +17,13 @@ type IstioInstallationSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation
+	List(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation
+	UnsortedList(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation
 	// Return the Set as a map of key to resource.
-	Map() map[string]*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation
+	Map() map[string]*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation
 	// Insert a resource into the set.
-	Insert(istioInstallation ...*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+	Insert(istioInstallation ...*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation)
 	// Compare the equality of the keys in two sets (not the resources themselves)
 	Equal(istioInstallationSet IstioInstallationSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
@@ -37,7 +37,7 @@ type IstioInstallationSet interface {
 	// Return the intersection with the provided set
 	Intersection(set IstioInstallationSet) IstioInstallationSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation, error)
+	Find(id ezkube.ResourceId) (*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
@@ -48,7 +48,7 @@ type IstioInstallationSet interface {
 	Clone() IstioInstallationSet
 }
 
-func makeGenericIstioInstallationSet(istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) sksets.ResourceSet {
+func makeGenericIstioInstallationSet(istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
 	for _, obj := range istioInstallationList {
 		genericResources = append(genericResources, obj)
@@ -60,12 +60,12 @@ type istioInstallationSet struct {
 	set sksets.ResourceSet
 }
 
-func NewIstioInstallationSet(istioInstallationList ...*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) IstioInstallationSet {
+func NewIstioInstallationSet(istioInstallationList ...*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) IstioInstallationSet {
 	return &istioInstallationSet{set: makeGenericIstioInstallationSet(istioInstallationList)}
 }
 
-func NewIstioInstallationSetFromList(istioInstallationList *admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallationList) IstioInstallationSet {
-	list := make([]*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation, 0, len(istioInstallationList.Items))
+func NewIstioInstallationSetFromList(istioInstallationList *admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallationList) IstioInstallationSet {
+	list := make([]*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation, 0, len(istioInstallationList.Items))
 	for idx := range istioInstallationList.Items {
 		list = append(list, &istioInstallationList.Items[idx])
 	}
@@ -79,57 +79,57 @@ func (s *istioInstallationSet) Keys() sets.String {
 	return s.Generic().Keys()
 }
 
-func (s *istioInstallationSet) List(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation {
+func (s *istioInstallationSet) List(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation))
+			return filter(obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation))
 		})
 	}
 
 	objs := s.Generic().List(genericFilters...)
-	istioInstallationList := make([]*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation, 0, len(objs))
+	istioInstallationList := make([]*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation, 0, len(objs))
 	for _, obj := range objs {
-		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation))
+		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation))
 	}
 	return istioInstallationList
 }
 
-func (s *istioInstallationSet) UnsortedList(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation {
+func (s *istioInstallationSet) UnsortedList(filterResource ...func(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation) bool) []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation))
+			return filter(obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation))
 		})
 	}
 
-	var istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation
+	var istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation
 	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation))
+		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation))
 	}
 	return istioInstallationList
 }
 
-func (s *istioInstallationSet) Map() map[string]*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation {
+func (s *istioInstallationSet) Map() map[string]*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}
+	newMap := map[string]*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation)
+		newMap[k] = v.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation)
 	}
 	return newMap
 }
 
 func (s *istioInstallationSet) Insert(
-	istioInstallationList ...*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation,
+	istioInstallationList ...*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
@@ -183,23 +183,23 @@ func (s *istioInstallationSet) Intersection(set IstioInstallationSet) IstioInsta
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation
+	var istioInstallationList []*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation
 	for _, obj := range newSet.List() {
-		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation))
+		istioInstallationList = append(istioInstallationList, obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation))
 	}
 	return NewIstioInstallationSet(istioInstallationList...)
 }
 
-func (s *istioInstallationSet) Find(id ezkube.ResourceId) (*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation, error) {
+func (s *istioInstallationSet) Find(id ezkube.ResourceId) (*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation, error) {
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find IstioInstallation %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation{}, id)
+	obj, err := s.Generic().Find(&admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*admin_enterprise_mesh_gloo_solo_io_v1.IstioInstallation), nil
+	return obj.(*admin_enterprise_mesh_gloo_solo_io_v1alpha1.IstioInstallation), nil
 }
 
 func (s *istioInstallationSet) Length() int {
