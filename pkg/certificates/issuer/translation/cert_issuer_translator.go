@@ -97,8 +97,7 @@ func (s *secretTranslator) Translate(
 	}
 
 	return &Output{
-		// TODO: Append the signingCA.Ca
-		CertChain:         utils2.PrependCerts(signedCert, signingCA.CertChain),
+		CertChain:         utils2.CombineCerts(signedCert, signingCA.CertChain),
 		SignedCertificate: signedCert,
 		SigningRootCa:     signingCA.RootCert,
 	}, nil

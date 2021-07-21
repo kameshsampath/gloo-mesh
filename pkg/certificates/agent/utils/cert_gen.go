@@ -81,7 +81,7 @@ func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []
 }
 
 /*
-	AppendRootCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Mesh
+	CombineCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Mesh
 	function:
 
 	https://github.com/istio/istio/blob/5218a80f97cb61ff4a02989b7d9f8c4fda50780f/security/pkg/pki/util/generate_csr.go#L95
@@ -89,40 +89,21 @@ func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []
 	Certificate chains are necessary to verify the authenticity of a certificate, in this case the authenticity of
 	the generated Ca Certificate against the VirtualMesh root cert
 */
-func AppendRootCerts(caCert, rootCert []byte) []byte {
-	var caCertCopy []byte
-	if len(caCert) > 0 {
+func CombineCerts(cert1, cert2 []byte) []byte {
+	var cert1Copy []byte
+	if len(cert1) > 0 {
 		// Copy the input certificate
-		caCertCopy = make([]byte, len(caCert))
-		copy(caCertCopy, caCert)
+		cert1Copy = make([]byte, len(cert1))
+		copy(cert1Copy, cert1)
 	}
-	if len(rootCert) > 0 {
-		if len(caCertCopy) > 0 {
+	if len(cert2) > 0 {
+		if len(cert1Copy) > 0 {
 			// Append a newline after the last cert
 			// Certs are very fooey, this is copy pasted from Mesh, plz do not touch
 			// Love, eitan
-			caCertCopy = []byte(strings.TrimSuffix(string(caCertCopy), "\n") + "\n")
+			cert1Copy = []byte(strings.TrimSuffix(string(cert1Copy), "\n") + "\n")
 		}
-		caCertCopy = append(caCertCopy, rootCert...)
+		cert1Copy = append(cert1Copy, cert2...)
 	}
-	return caCertCopy
-}
-
-func PrependCerts(caCert, certChain []byte) []byte {
-	var caCertCopy []byte
-	if len(caCert) > 0 {
-		// Copy the input certificate
-		caCertCopy = make([]byte, len(caCert))
-		copy(caCertCopy, caCert)
-	}
-	if len(certChain) > 0 {
-		if len(caCertCopy) > 0 {
-			// Append a newline after the last cert
-			// Certs are very fooey, this is copy pasted from Mesh, plz do not touch
-			// Love, eitan
-			caCertCopy = []byte(strings.TrimSuffix(string(caCertCopy), "\n") + "\n")
-		}
-		caCertCopy = append(caCertCopy, certChain...)
-	}
-	return caCertCopy
+	return cert1Copy
 }
