@@ -3,7 +3,7 @@ package secrets
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
+	"github.com/rotisserie/eris"
 
 	"istio.io/istio/security/pkg/pki/util"
 )
@@ -46,24 +46,25 @@ func (d CAData) Verify() error {
 	}
 	cert, err := util.ParsePemEncodedCertificate(d.CaCert)
 	if err != nil {
-		return fmt.Errorf("failed to parse cert PEM: %v", err)
+		return eris.Wrap(err, "failed to parse cert PEM")
 	}
 	chains, err := cert.Verify(opts)
 
 	if len(chains) == 0 || err != nil {
-		return fmt.Errorf(
-			"cannot verify the cert with the provided root chain and cert "+
-				"pool with error: %v", err)
+		return eris.Wrap(
+			err,
+			"cannot verify the cert with the provided root chain and cert pool with error",
+		)
 	}
 
 	// Verify that the key can be correctly parsed.
 	if _, err = util.ParsePemEncodedKey(d.CaPrivateKey); err != nil {
-		return fmt.Errorf("failed to parse private key PEM: %v", err)
+		return eris.Wrap(err, "failed to parse private key PEM")
 	}
 
 	// Verify the cert and key match.
 	if _, err := tls.X509KeyPair(d.CaCert, d.CaPrivateKey); err != nil {
-		return fmt.Errorf("the cert does not match the key")
+		return eris.Wrap(err, "the cert does not match the key")
 	}
 
 	return nil

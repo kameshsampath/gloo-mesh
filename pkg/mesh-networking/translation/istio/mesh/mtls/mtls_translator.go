@@ -51,8 +51,12 @@ const (
 )
 
 var (
-	signingCertSecretType = corev1.SecretType(
+	// Deprecated
+	deprecatedSigningCertSecretType = corev1.SecretType(
 		fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group),
+	)
+	signingCertSecretType = corev1.SecretType(
+		fmt.Sprintf("%s/signing_cert", certificatesv1.SchemeGroupVersion.Group),
 	)
 
 	// used when the user provides a nil root cert
@@ -67,9 +71,12 @@ var (
 	}
 )
 
+// IsSigningCert determines whether a cert can be used as a signing cert
 // used by networking reconciler to filter ignored secrets
+// Handle deprecated cert type.
 func IsSigningCert(secret *corev1.Secret) bool {
-	return secret.Type == signingCertSecretType
+	return secret.Type == signingCertSecretType ||
+		secret.Type == deprecatedSigningCertSecretType
 }
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -212,6 +219,18 @@ func (t *translator) configureSharedTrust(
 			// Set deprecated field for backwards compatibility
 			issuedCertificate.Spec.SigningCertificateSecret = rootCaSecret
 		case *networkingv1.RootCertificateAuthority_Secret:
+			// Pre-Validate secret to ensure it's formatted properly
+			secret, err := t.secrets.Find(typedCaSource.Secret)
+			if err != nil {
+				return eris.Wrapf(err, "Could not find provided ca signing secret (%s). "+
+					"Ensure it has the correct type: %s", sets.Key(secret), signingCertSecretType)
+			}
+
+			caData := secrets.CADataFromSecretData(secret.Data)
+			if err := caData.Verify(); err != nil {
+				return eris.Wrapf(err, "Provided CA (%s) is invalid", sets.Key(secret))
+			}
+
 			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
 				GlooMeshCa: &certificatesv1.RootCertificateAuthority{
 					CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
