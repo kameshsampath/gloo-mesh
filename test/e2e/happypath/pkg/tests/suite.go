@@ -11,7 +11,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/test/data"
 	. "github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
@@ -20,9 +19,7 @@ import (
 )
 
 var (
-	err                 error
-	VirtualMesh         *networkingv1.VirtualMesh
-	VirtualMeshManifest utils.Manifest
+	err error
 )
 
 const (
@@ -31,7 +28,7 @@ const (
 
 // Before running tests, federate the two clusters by creating a VirtualMesh with mTLS enabled.
 func SetupClustersAndFederation(customDeployFuc func()) {
-	VirtualMeshManifest, err = utils.NewManifest("virtualmesh.yaml")
+	tests.VirtualMeshManifest, err = utils.NewManifest("virtualmesh.yaml")
 	Expect(err).NotTo(HaveOccurred())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
@@ -73,7 +70,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 }
 
 func TeardownFederationAndClusters() {
-	err = VirtualMeshManifest.KubeDelete(tests.BookinfoNamespace)
+	err = tests.VirtualMeshManifest.KubeDelete(tests.BookinfoNamespace)
 	if err != nil {
 		// this is expected to fail in gloo-mesh-enterprise-helm tests as they run the rbac webhook which disables ability to delete this manifest
 		log.Printf("warn: %v", err)
