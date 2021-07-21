@@ -405,6 +405,7 @@ func generateSelfSignedCert(
 		CaPrivateKey: key,
 		CaCert:       cert,
 		RootCert:     cert,
+		CertChain:    cert,
 	}
 	return rootCaData, nil
 }

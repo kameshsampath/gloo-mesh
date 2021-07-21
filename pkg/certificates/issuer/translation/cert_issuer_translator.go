@@ -2,10 +2,10 @@ package translation
 
 import (
 	"context"
-
 	"github.com/rotisserie/eris"
 	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	utils2 "github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -97,7 +97,8 @@ func (s *secretTranslator) Translate(
 	}
 
 	return &Output{
-		CertChain:         signingCA.CertChain,
+		// TODO: Append the signingCA.Ca
+		CertChain:         utils2.PrependCerts(signedCert, signingCA.CertChain),
 		SignedCertificate: signedCert,
 		SigningRootCa:     signingCA.RootCert,
 	}, nil
