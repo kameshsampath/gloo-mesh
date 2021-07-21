@@ -2,8 +2,9 @@ package mtls_test
 
 import (
 	"context"
-	"istio.io/istio/security/pkg/pki/util"
 	"time"
+
+	"istio.io/istio/security/pkg/pki/util"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"

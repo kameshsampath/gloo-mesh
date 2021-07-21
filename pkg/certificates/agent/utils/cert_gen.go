@@ -48,7 +48,11 @@ const (
 	certificateRequest = "CERTIFICATE REQUEST"
 )
 
-func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []byte) (csr []byte, err error) {
+func GenerateCertificateSigningRequest(
+	hosts []string,
+	org, meshName string,
+	privateKey []byte,
+) (csr []byte, err error) {
 
 	// Attempt to decode the key from the PEM format, currently only one format is supported (PKCS1)
 	block, _ := pem.Decode(privateKey)
@@ -65,6 +69,14 @@ func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []
 	if err != nil {
 		return nil, eris.Wrap(err, "CSR template creation failed")
 	}
+
+	// We add the cluster name to the new CSR template subject.
+	// This is extremely important to identify this new certificate as different from it's parent,
+	// and others it's communicating with.
+	if meshName == "" {
+		return nil, eris.New("meshName argument is required")
+	}
+	template.Subject.OrganizationalUnit = append(template.Subject.OrganizationalUnit, meshName)
 
 	csr, err = x509.CreateCertificateRequest(rand.Reader, template, priv)
 	if err != nil {

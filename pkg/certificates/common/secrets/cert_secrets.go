@@ -3,6 +3,7 @@ package secrets
 import (
 	"crypto/tls"
 	"crypto/x509"
+
 	"github.com/rotisserie/eris"
 
 	"istio.io/istio/security/pkg/pki/util"

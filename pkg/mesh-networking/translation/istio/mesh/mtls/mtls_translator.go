@@ -55,7 +55,7 @@ var (
 	deprecatedSigningCertSecretType = corev1.SecretType(
 		fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group),
 	)
-	signingCertSecretType = corev1.SecretType(
+	SigningCertSecretType = corev1.SecretType(
 		fmt.Sprintf("%s/signing_cert", certificatesv1.SchemeGroupVersion.Group),
 	)
 
@@ -75,7 +75,7 @@ var (
 // used by networking reconciler to filter ignored secrets
 // Handle deprecated cert type.
 func IsSigningCert(secret *corev1.Secret) bool {
-	return secret.Type == signingCertSecretType ||
+	return secret.Type == SigningCertSecretType ||
 		secret.Type == deprecatedSigningCertSecretType
 }
 
@@ -223,7 +223,7 @@ func (t *translator) configureSharedTrust(
 			secret, err := t.secrets.Find(typedCaSource.Secret)
 			if err != nil {
 				return eris.Wrapf(err, "Could not find provided ca signing secret (%s). "+
-					"Ensure it has the correct type: %s", sets.Key(secret), signingCertSecretType)
+					"Ensure it has the correct type: %s", sets.Key(secret), SigningCertSecretType)
 			}
 
 			caData := secrets.CADataFromSecretData(secret.Data)
@@ -294,7 +294,7 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 				Labels:      metautils.TranslatedObjectLabels(),
 			},
 			Data: selfSignedCert.ToSecretData(),
-			Type: signingCertSecretType,
+			Type: SigningCertSecretType,
 		}
 	}
 
