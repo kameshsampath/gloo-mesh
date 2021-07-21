@@ -3,10 +3,11 @@ package tests
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/gloo-mesh/test/e2e/istio/pkg/tests"
 	"log"
 	"os"
 	"time"
+
+	"github.com/solo-io/gloo-mesh/test/e2e/istio/pkg/tests"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -51,10 +52,10 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	vm, err := data.SelfSignedVirtualMesh(
 		dynamicClient,
 		"bookinfo-federation",
-		BookinfoNamespace,
+		tests.BookinfoNamespace,
 		[]*v1.ObjectRef{
-			MgmtMesh,
-			RemoteMesh,
+			tests.MgmtMesh,
+			tests.RemoteMesh,
 		},
 		false,
 	)
@@ -72,7 +73,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 }
 
 func TeardownFederationAndClusters() {
-	err = VirtualMeshManifest.KubeDelete(BookinfoNamespace)
+	err = VirtualMeshManifest.KubeDelete(tests.BookinfoNamespace)
 	if err != nil {
 		// this is expected to fail in gloo-mesh-enterprise-helm tests as they run the rbac webhook which disables ability to delete this manifest
 		log.Printf("warn: %v", err)

@@ -14,8 +14,6 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 )
 
-
-
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e/happypath
 // to test only this package, run `make run-tests TEST_PKG=test/e2e/happypath
 func TestHappyPath(t *testing.T) {

@@ -2,6 +2,8 @@ package tests
 
 import (
 	"context"
+	"time"
+
 	. "github.com/onsi/gomega"
 	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
@@ -14,7 +16,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 func SetupProvidedSecret(ctx context.Context, dyn client.Client, vm *networkingv1.VirtualMesh) {
