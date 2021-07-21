@@ -61,8 +61,13 @@ func GenerateCertificateSigningRequest(
 		return nil, eris.Wrapf(err, "unable to decode private key, currently only supporting PKCS1 encrypted keys")
 	}
 
+	var hostsStr string
+	if len(hosts) > 0 {
+		hostsStr = strings.Join(hosts, ",")
+	}
+
 	template, err := pkiutil.GenCSRTemplate(pkiutil.CertOptions{
-		Host:          strings.Join(hosts, ","),
+		Host:          hostsStr,
 		Org:           org,
 		SignerPrivPem: privateKey,
 	})
