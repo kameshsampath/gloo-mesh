@@ -81,7 +81,7 @@ func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []
 }
 
 /*
-	CombineCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Mesh
+	AppendCertificates appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Mesh
 	function:
 
 	https://github.com/istio/istio/blob/5218a80f97cb61ff4a02989b7d9f8c4fda50780f/security/pkg/pki/util/generate_csr.go#L95
@@ -89,7 +89,7 @@ func GenerateCertificateSigningRequest(hosts []string, org string, privateKey []
 	Certificate chains are necessary to verify the authenticity of a certificate, in this case the authenticity of
 	the generated Ca Certificate against the VirtualMesh root cert
 */
-func CombineCerts(cert1, cert2 []byte) []byte {
+func AppendCertificates(cert1, cert2 []byte) []byte {
 	var cert1Copy []byte
 	if len(cert1) > 0 {
 		// Copy the input certificate
