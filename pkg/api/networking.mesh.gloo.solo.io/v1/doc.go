@@ -3,4 +3,5 @@
 // Package v1 contains API Schema definitions for the networking.mesh.gloo.solo.io v1 API group
 // +k8s:deepcopy-gen=package,register
 // +groupName=networking.mesh.gloo.solo.io
+// +k8s:openapi-gen=true
 package v1
